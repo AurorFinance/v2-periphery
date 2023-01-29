@@ -1,2 +1,6 @@
-build/
 node_modules/
+build/
+**/process.env
+deployment/artifacts/
+deployment/cache/
+deployment/contracts/
