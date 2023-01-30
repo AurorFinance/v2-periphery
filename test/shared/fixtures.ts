@@ -15,29 +15,35 @@ import AegisV2Router01 from '../../build/AegisV2Router01.json'
 import AegisV2Migrator from '../../build/AegisV2Migrator.json'
 import AegisV2Router02 from '../../build/AegisV2Router02.json'
 import RouterEventEmitter from '../../build/RouterEventEmitter.json'
+import AegisRouterFee from '../../build/AegisRouterFee.json';
 
 const overrides = {
   gasLimit: 9999999
 }
 
 interface V2Fixture {
-  token0: Contract
-  token1: Contract
   WETH: Contract
+  WETHExchangeV1: Contract
+  WETHPair: Contract
   WETHPartner: Contract
   factoryV1: Contract
   factoryV2: Contract
+  migrator: Contract
+  pair: Contract
   router01: Contract
   router02: Contract
-  routerEventEmitter: Contract
   router: Contract
-  migrator: Contract
-  WETHExchangeV1: Contract
-  pair: Contract
-  WETHPair: Contract
+  routerEventEmitter: Contract
+  routerFee: Contract
+  token0: Contract
+  token1: Contract
 }
 
 export async function v2Fixture(provider: Web3Provider, [wallet]: Wallet[]): Promise<V2Fixture> {
+
+  //deploy router fee manager
+  const routerFee = await deployContract(wallet, AegisRouterFee, [wallet.address]);
+
   // deploy tokens
   const tokenA = await deployContract(wallet, ERC20, [expandTo18Decimals(10000)])
   const tokenB = await deployContract(wallet, ERC20, [expandTo18Decimals(10000)])
@@ -82,19 +88,20 @@ export async function v2Fixture(provider: Web3Provider, [wallet]: Wallet[]): Pro
   const WETHPair = new Contract(WETHPairAddress, JSON.stringify(IAegisV2Pair.abi), provider).connect(wallet)
 
   return {
-    token0,
-    token1,
     WETH,
+    WETHExchangeV1,
+    WETHPair,
     WETHPartner,
     factoryV1,
     factoryV2,
+    migrator,
+    pair,
     router01,
     router02,
     router: router02, // the default router, 01 had a minor bug
     routerEventEmitter,
-    migrator,
-    WETHExchangeV1,
-    pair,
-    WETHPair
+    routerFee: routerFee,
+    token0,
+    token1,
   }
 }
