@@ -1,0 +1,1 @@
+# Please update the v2-core contracts dependencies if those contrcts are changed!
