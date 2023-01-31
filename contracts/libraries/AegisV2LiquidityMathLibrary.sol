@@ -28,10 +28,10 @@ library AegisV2LiquidityMathLibrary {
             FullMath.mulDiv(
                 invariant.mul(1000),
                 aToB ? truePriceTokenA : truePriceTokenB,
-                (aToB ? truePriceTokenB : truePriceTokenA).mul(997)
+                (aToB ? truePriceTokenB : truePriceTokenA).mul(1000)
             )
         );
-        uint256 rightSide = (aToB ? reserveA.mul(1000) : reserveB.mul(1000)) / 997;
+        uint256 rightSide = (aToB ? reserveA.mul(1000) : reserveB.mul(1000)) / 1000;
 
         if (leftSide < rightSide) return (false, 0);
 

@@ -3,24 +3,32 @@ pragma solidity =0.6.6;
 import './v2-core/contracts/interfaces/IAegisV2Factory.sol';
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 
+import './AegisRouterFee.sol';
 import './interfaces/IAegisV2Router02.sol';
-import './libraries/AegisV2Library.sol';
-import './libraries/SafeMath.sol';
 import './interfaces/IERC20.sol';
 import './interfaces/IWETH.sol';
+import './libraries/AegisV2Library.sol';
+import './libraries/SafeMath.sol';
 
-contract AegisV2Router02 is IAegisV2Router02 {
+contract AegisV2Router02 is IAegisV2Router02, AegisRouterFee {
     using SafeMath for uint;
 
     address public immutable override factory;
     address public immutable override WETH;
+    // TODO: fix this
+    bool immutable supportFeeOnTransferSwap = false;
 
     modifier ensure(uint deadline) {
         require(deadline >= block.timestamp, 'AegisV2Router: EXPIRED');
         _;
     }
 
-    constructor(address _factory, address _WETH) public {
+    modifier supportFeeOnTransferSwapActive {
+        require (supportFeeOnTransferSwap, "AegisV2Router: NOT SUPPORTED");
+        _;
+    }
+
+    constructor(address _factory, address _WETH, address _treasury) AegisRouterFee(_treasury) public {
         factory = _factory;
         WETH = _WETH;
     }
@@ -176,7 +184,7 @@ contract AegisV2Router02 is IAegisV2Router02 {
         uint amountETHMin,
         address to,
         uint deadline
-    ) public virtual override ensure(deadline) returns (uint amountETH) {
+    ) public virtual override ensure(deadline) supportFeeOnTransferSwapActive returns (uint amountETH) {
         (, amountETH) = removeLiquidity(
             token,
             WETH,
@@ -198,7 +206,7 @@ contract AegisV2Router02 is IAegisV2Router02 {
         address to,
         uint deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
-    ) external virtual override returns (uint amountETH) {
+    ) external virtual override supportFeeOnTransferSwapActive returns (uint amountETH) {
         address pair = AegisV2Library.pairFor(factory, token, WETH);
         uint value = approveMax ? uint(-1) : liquidity;
         IAegisV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
@@ -221,6 +229,8 @@ contract AegisV2Router02 is IAegisV2Router02 {
             );
         }
     }
+
+
     function swapExactTokensForTokens(
         uint amountIn,
         uint amountOutMin,
@@ -228,13 +238,18 @@ contract AegisV2Router02 is IAegisV2Router02 {
         address to,
         uint deadline
     ) external virtual override ensure(deadline) returns (uint[] memory amounts) {
-        amounts = AegisV2Library.getAmountsOut(factory, amountIn, path);
+        // Aegis: getAmountsOut with amountInWithFee. We do not leave fee inside the pair contract, it will be transfered to the treasury
+        uint fee = getFeeAmount(amountIn, path.length-1);
+        uint amountInWithFee = amountIn.sub(fee);
+        amounts = AegisV2Library.getAmountsOut(factory, amountInWithFee, path);
         require(amounts[amounts.length - 1] >= amountOutMin, 'AegisV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, AegisV2Library.pairFor(factory, path[0], path[1]), amounts[0]
         );
         _swap(amounts, path, to);
+        collectFee(path[0], msg.sender, fee);
     }
+
     function swapTokensForExactTokens(
         uint amountOut,
         uint amountInMax,
@@ -242,13 +257,18 @@ contract AegisV2Router02 is IAegisV2Router02 {
         address to,
         uint deadline
     ) external virtual override ensure(deadline) returns (uint[] memory amounts) {
+        // Aegis: the library method getAmountsIn will return the "fee added" amountsIn for path[0] (in this case no liquidity fees have been applied)
+        // fee amount is calculated on top of the amountsIn (based on reserves)
         amounts = AegisV2Library.getAmountsIn(factory, amountOut, path);
-        require(amounts[0] <= amountInMax, 'AegisV2Router: EXCESSIVE_INPUT_AMOUNT');
+        uint fee = getFeeAmount(amounts[0], path.length-1);
+        require(amounts[0].add(fee) <= amountInMax, 'AegisV2Router: EXCESSIVE_INPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, AegisV2Library.pairFor(factory, path[0], path[1]), amounts[0]
         );
         _swap(amounts, path, to);
+        collectFee(path[0], msg.sender, fee);
     }
+
     function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
         external
         virtual
@@ -257,13 +277,17 @@ contract AegisV2Router02 is IAegisV2Router02 {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(path[0] == WETH, 'AegisV2Router: INVALID_PATH');
-        amounts = AegisV2Library.getAmountsOut(factory, msg.value, path);
+                require(path[0] == WETH, 'AegisV2Router: INVALID_PATH');
+        uint fee = getFeeAmount(msg.value, path.length-1);
+        uint amountInWithFee = msg.value.sub(fee);
+        amounts = AegisV2Library.getAmountsOut(factory, amountInWithFee, path);
         require(amounts[amounts.length - 1] >= amountOutMin, 'AegisV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
         IWETH(WETH).deposit{value: amounts[0]}();
         assert(IWETH(WETH).transfer(AegisV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
         _swap(amounts, path, to);
+        collectFeeETH(fee);
     }
+
     function swapTokensForExactETH(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
         external
         virtual
@@ -273,14 +297,17 @@ contract AegisV2Router02 is IAegisV2Router02 {
     {
         require(path[path.length - 1] == WETH, 'AegisV2Router: INVALID_PATH');
         amounts = AegisV2Library.getAmountsIn(factory, amountOut, path);
-        require(amounts[0] <= amountInMax, 'AegisV2Router: EXCESSIVE_INPUT_AMOUNT');
+        uint fee = getFeeAmount(amounts[0], path.length-1);
+        require(amounts[0].add(fee) <= amountInMax, 'AegisV2Router: EXCESSIVE_INPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, AegisV2Library.pairFor(factory, path[0], path[1]), amounts[0]
         );
         _swap(amounts, path, address(this));
         IWETH(WETH).withdraw(amounts[amounts.length - 1]);
         TransferHelper.safeTransferETH(to, amounts[amounts.length - 1]);
+        collectFee(path[0], msg.sender, fee);
     }
+
     function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
         external
         virtual
@@ -289,7 +316,9 @@ contract AegisV2Router02 is IAegisV2Router02 {
         returns (uint[] memory amounts)
     {
         require(path[path.length - 1] == WETH, 'AegisV2Router: INVALID_PATH');
-        amounts = AegisV2Library.getAmountsOut(factory, amountIn, path);
+        uint fee = getFeeAmount(amountIn, path.length-1);
+        uint amountInWithFee = amountIn.sub(fee);
+        amounts = AegisV2Library.getAmountsOut(factory, amountInWithFee, path);
         require(amounts[amounts.length - 1] >= amountOutMin, 'AegisV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, AegisV2Library.pairFor(factory, path[0], path[1]), amounts[0]
@@ -297,6 +326,7 @@ contract AegisV2Router02 is IAegisV2Router02 {
         _swap(amounts, path, address(this));
         IWETH(WETH).withdraw(amounts[amounts.length - 1]);
         TransferHelper.safeTransferETH(to, amounts[amounts.length - 1]);
+        collectFee(path[0], msg.sender, fee);
     }
     function swapETHForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)
         external
@@ -308,12 +338,14 @@ contract AegisV2Router02 is IAegisV2Router02 {
     {
         require(path[0] == WETH, 'AegisV2Router: INVALID_PATH');
         amounts = AegisV2Library.getAmountsIn(factory, amountOut, path);
-        require(amounts[0] <= msg.value, 'AegisV2Router: EXCESSIVE_INPUT_AMOUNT');
+        uint fee = getFeeAmount(amounts[0], path.length-1);
+        require(amounts[0].add(fee) <= msg.value, 'AegisV2Router: INSUFFICIENT_INPUT_AMOUNT');
         IWETH(WETH).deposit{value: amounts[0]}();
         assert(IWETH(WETH).transfer(AegisV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
         _swap(amounts, path, to);
+        collectFeeETH(fee);
         // refund dust eth, if any
-        if (msg.value > amounts[0]) TransferHelper.safeTransferETH(msg.sender, msg.value - amounts[0]);
+        if (msg.value.sub(fee) > amounts[0]) TransferHelper.safeTransferETH(msg.sender, msg.value.sub(fee) - amounts[0]);
     }
 
     // **** SWAP (supporting fee-on-transfer tokens) ****
@@ -342,7 +374,7 @@ contract AegisV2Router02 is IAegisV2Router02 {
         address[] calldata path,
         address to,
         uint deadline
-    ) external virtual override ensure(deadline) {
+    ) external virtual override ensure(deadline) supportFeeOnTransferSwapActive {
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, AegisV2Library.pairFor(factory, path[0], path[1]), amountIn
         );
@@ -363,7 +395,7 @@ contract AegisV2Router02 is IAegisV2Router02 {
         virtual
         override
         payable
-        ensure(deadline)
+        ensure(deadline) supportFeeOnTransferSwapActive
     {
         require(path[0] == WETH, 'AegisV2Router: INVALID_PATH');
         uint amountIn = msg.value;
@@ -386,7 +418,7 @@ contract AegisV2Router02 is IAegisV2Router02 {
         external
         virtual
         override
-        ensure(deadline)
+        ensure(deadline) supportFeeOnTransferSwapActive
     {
         require(path[path.length - 1] == WETH, 'AegisV2Router: INVALID_PATH');
         TransferHelper.safeTransferFrom(

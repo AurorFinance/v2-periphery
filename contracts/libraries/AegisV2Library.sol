@@ -21,7 +21,7 @@ library AegisV2Library {
                 hex'ff',
                 factory,
                 keccak256(abi.encodePacked(token0, token1)),
-                hex'83c6983b7ae22b6e1a74b3646d3a18c40cd0deb10372c07e482c7b4bb9d777d1' // init code hash
+                hex'344ae39072c7699cff215e902894180dff372fcc1bbde388c3cbe055f67d3eb6' // init code hash
             ))));
     }
 
@@ -43,7 +43,7 @@ library AegisV2Library {
     function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) internal pure returns (uint amountOut) {
         require(amountIn > 0, 'AegisV2Library: INSUFFICIENT_INPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'AegisV2Library: INSUFFICIENT_LIQUIDITY');
-        uint amountInWithFee = amountIn.mul(997);
+        uint amountInWithFee = amountIn.mul(1000);
         uint numerator = amountInWithFee.mul(reserveOut);
         uint denominator = reserveIn.mul(1000).add(amountInWithFee);
         amountOut = numerator / denominator;
@@ -54,7 +54,7 @@ library AegisV2Library {
         require(amountOut > 0, 'AegisV2Library: INSUFFICIENT_OUTPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'AegisV2Library: INSUFFICIENT_LIQUIDITY');
         uint numerator = reserveIn.mul(amountOut).mul(1000);
-        uint denominator = reserveOut.sub(amountOut).mul(997);
+        uint denominator = reserveOut.sub(amountOut).mul(1000);
         amountIn = (numerator / denominator).add(1);
     }
 

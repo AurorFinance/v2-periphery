@@ -15,11 +15,10 @@ const overrides = {
 }
 
 enum RouterVersion {
-  AegisV2Router01 = 'AegisV2Router01',
   AegisV2Router02 = 'AegisV2Router02'
 }
 
-describe('AegisV2Router{01,02}', () => {
+describe('AegisV2Router{02}', () => {
   for (const routerVersion of Object.keys(RouterVersion)) {
     const provider = new MockProvider({
       hardfork: 'istanbul',
@@ -46,7 +45,6 @@ describe('AegisV2Router{01,02}', () => {
       WETHPartner = fixture.WETHPartner
       factory = fixture.factoryV2
       router = {
-        [RouterVersion.AegisV2Router01]: fixture.router01,
         [RouterVersion.AegisV2Router02]: fixture.router02
       }[routerVersion as RouterVersion]
       pair = fixture.pair
@@ -324,13 +322,13 @@ describe('AegisV2Router{01,02}', () => {
             )
           )
             .to.emit(token0, 'Transfer')
-            .withArgs(wallet.address, pair.address, swapAmount)
+            .withArgs(wallet.address, pair.address, swapAmount.mul(997).div(1000))
             .to.emit(token1, 'Transfer')
             .withArgs(pair.address, wallet.address, expectedOutputAmount)
             .to.emit(pair, 'Sync')
-            .withArgs(token0Amount.add(swapAmount), token1Amount.sub(expectedOutputAmount))
+            .withArgs(token0Amount.add(swapAmount.mul(997).div(1000)), token1Amount.sub(expectedOutputAmount))
             .to.emit(pair, 'Swap')
-            .withArgs(router.address, swapAmount, 0, 0, expectedOutputAmount, wallet.address)
+            .withArgs(router.address, swapAmount.mul(997).div(1000), 0, 0, expectedOutputAmount, wallet.address)
         })
 
         it('amounts', async () => {
@@ -347,7 +345,7 @@ describe('AegisV2Router{01,02}', () => {
             )
           )
             .to.emit(routerEventEmitter, 'Amounts')
-            .withArgs([swapAmount, expectedOutputAmount])
+            .withArgs([swapAmount.mul(997).div(1000), expectedOutputAmount])
         })
 
         it('gas', async () => {
@@ -368,8 +366,7 @@ describe('AegisV2Router{01,02}', () => {
           const receipt = await tx.wait()
           expect(receipt.gasUsed).to.eq(
             {
-              [RouterVersion.AegisV2Router01]: 101876,
-              [RouterVersion.AegisV2Router02]: 101898
+              [RouterVersion.AegisV2Router02]: 118360
             }[routerVersion as RouterVersion]
           )
         }).retries(3)
@@ -378,7 +375,7 @@ describe('AegisV2Router{01,02}', () => {
       describe('swapTokensForExactTokens', () => {
         const token0Amount = expandTo18Decimals(5)
         const token1Amount = expandTo18Decimals(10)
-        const expectedSwapAmount = bigNumberify('557227237267357629')
+        const expectedSwapAmount = bigNumberify('555555555555555556')
         const outputAmount = expandTo18Decimals(1)
 
         beforeEach(async () => {
@@ -449,23 +446,23 @@ describe('AegisV2Router{01,02}', () => {
             })
           )
             .to.emit(WETH, 'Transfer')
-            .withArgs(router.address, WETHPair.address, swapAmount)
+            .withArgs(router.address, WETHPair.address, swapAmount.mul(997).div(1000))
             .to.emit(WETHPartner, 'Transfer')
             .withArgs(WETHPair.address, wallet.address, expectedOutputAmount)
             .to.emit(WETHPair, 'Sync')
             .withArgs(
               WETHPairToken0 === WETHPartner.address
                 ? WETHPartnerAmount.sub(expectedOutputAmount)
-                : ETHAmount.add(swapAmount),
+                : ETHAmount.add(swapAmount.mul(997).div(1000)),
               WETHPairToken0 === WETHPartner.address
-                ? ETHAmount.add(swapAmount)
+                ? ETHAmount.add(swapAmount.mul(997).div(1000))
                 : WETHPartnerAmount.sub(expectedOutputAmount)
             )
             .to.emit(WETHPair, 'Swap')
             .withArgs(
               router.address,
-              WETHPairToken0 === WETHPartner.address ? 0 : swapAmount,
-              WETHPairToken0 === WETHPartner.address ? swapAmount : 0,
+              WETHPairToken0 === WETHPartner.address ? 0 : swapAmount.mul(997).div(1000),
+              WETHPairToken0 === WETHPartner.address ? swapAmount.mul(997).div(1000) : 0,
               WETHPairToken0 === WETHPartner.address ? expectedOutputAmount : 0,
               WETHPairToken0 === WETHPartner.address ? 0 : expectedOutputAmount,
               wallet.address
@@ -487,7 +484,7 @@ describe('AegisV2Router{01,02}', () => {
             )
           )
             .to.emit(routerEventEmitter, 'Amounts')
-            .withArgs([swapAmount, expectedOutputAmount])
+            .withArgs([swapAmount.mul(997).div(1000), expectedOutputAmount])
         })
 
         it('gas', async () => {
@@ -517,8 +514,7 @@ describe('AegisV2Router{01,02}', () => {
           const receipt = await tx.wait()
           expect(receipt.gasUsed).to.eq(
             {
-              [RouterVersion.AegisV2Router01]: 138700,
-              [RouterVersion.AegisV2Router02]: 138700
+              [RouterVersion.AegisV2Router02]: 154391
             }[routerVersion as RouterVersion]
           )
         }).retries(3)
@@ -527,7 +523,7 @@ describe('AegisV2Router{01,02}', () => {
       describe('swapTokensForExactETH', () => {
         const WETHPartnerAmount = expandTo18Decimals(5)
         const ETHAmount = expandTo18Decimals(10)
-        const expectedSwapAmount = bigNumberify('557227237267357629')
+        const expectedSwapAmount = bigNumberify('555555555555555556')
         const outputAmount = expandTo18Decimals(1)
 
         beforeEach(async () => {
@@ -619,23 +615,23 @@ describe('AegisV2Router{01,02}', () => {
             )
           )
             .to.emit(WETHPartner, 'Transfer')
-            .withArgs(wallet.address, WETHPair.address, swapAmount)
+            .withArgs(wallet.address, WETHPair.address, swapAmount.mul(997).div(1000))
             .to.emit(WETH, 'Transfer')
             .withArgs(WETHPair.address, router.address, expectedOutputAmount)
             .to.emit(WETHPair, 'Sync')
             .withArgs(
               WETHPairToken0 === WETHPartner.address
-                ? WETHPartnerAmount.add(swapAmount)
+                ? WETHPartnerAmount.add(swapAmount.mul(997).div(1000))
                 : ETHAmount.sub(expectedOutputAmount),
               WETHPairToken0 === WETHPartner.address
                 ? ETHAmount.sub(expectedOutputAmount)
-                : WETHPartnerAmount.add(swapAmount)
+                : WETHPartnerAmount.add(swapAmount.mul(997).div(1000))
             )
             .to.emit(WETHPair, 'Swap')
             .withArgs(
               router.address,
-              WETHPairToken0 === WETHPartner.address ? swapAmount : 0,
-              WETHPairToken0 === WETHPartner.address ? 0 : swapAmount,
+              WETHPairToken0 === WETHPartner.address ? swapAmount.mul(997).div(1000) : 0,
+              WETHPairToken0 === WETHPartner.address ? 0 : swapAmount.mul(997).div(1000),
               WETHPairToken0 === WETHPartner.address ? 0 : expectedOutputAmount,
               WETHPairToken0 === WETHPartner.address ? expectedOutputAmount : 0,
               router.address
@@ -656,14 +652,14 @@ describe('AegisV2Router{01,02}', () => {
             )
           )
             .to.emit(routerEventEmitter, 'Amounts')
-            .withArgs([swapAmount, expectedOutputAmount])
+            .withArgs([swapAmount.mul(997).div(1000), expectedOutputAmount])
         })
       })
 
       describe('swapETHForExactTokens', () => {
         const WETHPartnerAmount = expandTo18Decimals(10)
         const ETHAmount = expandTo18Decimals(5)
-        const expectedSwapAmount = bigNumberify('557227237267357629')
+        const expectedSwapAmount = bigNumberify('555555555555555556')
         const outputAmount = expandTo18Decimals(1)
 
         beforeEach(async () => {
@@ -683,7 +679,7 @@ describe('AegisV2Router{01,02}', () => {
               MaxUint256,
               {
                 ...overrides,
-                value: expectedSwapAmount
+                value: expectedSwapAmount.mul(1000).div(997)
               }
             )
           )
@@ -721,7 +717,7 @@ describe('AegisV2Router{01,02}', () => {
               MaxUint256,
               {
                 ...overrides,
-                value: expectedSwapAmount
+                value: expectedSwapAmount.mul(1000).div(997)
               }
             )
           )

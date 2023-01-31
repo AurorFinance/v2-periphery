@@ -1,5 +1,6 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomiclabs/hardhat-ethers";
+import "hardhat-contract-sizer";
 import * as dotenv from 'dotenv';
 
 dotenv.config({path: process.cwd() + '/scripts/process.env'});
@@ -12,7 +13,7 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 999999
+            runs: 48000
           }
         }
       },
