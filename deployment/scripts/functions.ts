@@ -30,3 +30,19 @@ export async function deployRouter(factory:string, weth: string) : Promise<strin
   console.log("✅ Deployment ROUTER passed");
   return deployedContract.address;
 }
+
+export async function deployWeth() : Promise<string> {
+	const [deployer] = await ethers.getSigners();
+	console.log('ℹ️  Deploying contract with address:', deployer.address);
+
+	const ContractSource = await ethers.getContractFactory('WETH9');
+	const deployedContract = await ContractSource.deploy();
+
+	await deployedContract.deployed();
+
+	console.log('😎 Contract deployed at:', deployedContract.address);
+
+  console.log("✅ Deployment WETH passed");
+
+	return deployedContract.address;
+}
