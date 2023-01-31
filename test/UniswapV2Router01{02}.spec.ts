@@ -51,8 +51,8 @@ describe('AegisV2Router{02}', () => {
       WETHPair = fixture.WETHPair
       routerEventEmitter = fixture.routerEventEmitter
 
-      await router.setTreasury(treasury.address);
-      expect(await router.treasury()).to.eqls(treasury.address);
+      await router.setTreasury(treasury.address)
+      expect(await router.treasury()).to.eqls(treasury.address)
     })
 
     afterEach(async function() {
@@ -446,7 +446,7 @@ describe('AegisV2Router{02}', () => {
 
         it('happy path', async () => {
           const WETHPairToken0 = await WETHPair.token0()
-          const beforeSwapTreasuryETHBalance = await treasury.getBalance();
+          const beforeSwapTreasuryETHBalance = await treasury.getBalance()
           await expect(
             router.swapExactETHForTokens(0, [WETH.address, WETHPartner.address], wallet.address, MaxUint256, {
               ...overrides,
@@ -476,7 +476,12 @@ describe('AegisV2Router{02}', () => {
               wallet.address
             )
 
-          expect(await treasury.getBalance()).to.equal((new BigNumber(swapAmount).mul(3).div(1000)).add(beforeSwapTreasuryETHBalance))
+          expect(await treasury.getBalance()).to.equal(
+            new BigNumber(swapAmount)
+              .mul(3)
+              .div(1000)
+              .add(beforeSwapTreasuryETHBalance)
+          )
         })
 
         it('amounts', async () => {
@@ -685,7 +690,7 @@ describe('AegisV2Router{02}', () => {
 
         it('happy path', async () => {
           const WETHPairToken0 = await WETHPair.token0()
-          const beforeSwapTreasuryETHBalance = await treasury.getBalance();
+          const beforeSwapTreasuryETHBalance = await treasury.getBalance()
           await expect(
             router.swapETHForExactTokens(
               outputAmount,
@@ -721,7 +726,12 @@ describe('AegisV2Router{02}', () => {
               wallet.address
             )
 
-          expect(await treasury.getBalance()).to.equal((new BigNumber(expectedSwapAmount).mul(3).div(1000)).add(beforeSwapTreasuryETHBalance))
+          expect(await treasury.getBalance()).to.equal(
+            new BigNumber(expectedSwapAmount)
+              .mul(3)
+              .div(1000)
+              .add(beforeSwapTreasuryETHBalance)
+          )
         })
 
         it('amounts', async () => {

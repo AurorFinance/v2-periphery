@@ -3,7 +3,7 @@ import { solidity, MockProvider, createFixtureLoader, deployContract } from 'eth
 import { Contract } from 'ethers'
 import { BigNumber, bigNumberify } from 'ethers/utils'
 import { MaxUint256 } from 'ethers/constants'
-import {IAegisV2Pair} from './shared/abi';
+import { IAegisV2Pair } from './shared/abi'
 
 import { v2Fixture } from './shared/fixtures'
 import { expandTo18Decimals, getApprovalDigest, MINIMUM_LIQUIDITY } from './shared/utilities'
@@ -140,8 +140,8 @@ describe('fee-on-transfer tokens', () => {
     WETH = fixture.WETH
     router = fixture.router02
 
-    await router.setTreasury(treasury.address);
-    expect(await router.treasury()).to.equal(treasury.address);
+    await router.setTreasury(treasury.address)
+    expect(await router.treasury()).to.equal(treasury.address)
 
     DTT = await deployContract(wallet, DeflatingERC20, [expandTo18Decimals(10000)])
 
@@ -268,7 +268,7 @@ describe('fee-on-transfer tokens', () => {
         overrides
       )
 
-      expect(await WETH.balanceOf(treasury.address)).to.equal((new BigNumber(amountIn)).mul(3).div(1000))
+      expect(await WETH.balanceOf(treasury.address)).to.equal(new BigNumber(amountIn).mul(3).div(1000))
     })
   })
 
@@ -281,7 +281,7 @@ describe('fee-on-transfer tokens', () => {
     const swapAmount = expandTo18Decimals(1)
     await addLiquidity(DTTAmount, ETHAmount)
 
-    const beforeETHBalance = await provider.getBalance(treasury.address);
+    const beforeETHBalance = await provider.getBalance(treasury.address)
     await router.swapExactETHForTokensSupportingFeeOnTransferTokens(
       0,
       [WETH.address, DTT.address],
@@ -293,7 +293,12 @@ describe('fee-on-transfer tokens', () => {
       }
     )
 
-    expect(await provider.getBalance(treasury.address)).to.equal(((new BigNumber(swapAmount)).mul(3).div(1000)).add(beforeETHBalance))
+    expect(await provider.getBalance(treasury.address)).to.equal(
+      new BigNumber(swapAmount)
+        .mul(3)
+        .div(1000)
+        .add(beforeETHBalance)
+    )
   })
 
   // DTT -> ETH
@@ -315,7 +320,7 @@ describe('fee-on-transfer tokens', () => {
       MaxUint256,
       overrides
     )
-    
+
     expect(await DTT.balanceOf(treasury.address)).to.equal('2970000000000000')
   })
 })
@@ -336,9 +341,9 @@ describe('fee-on-transfer tokens: reloaded', () => {
     const fixture = await loadFixture(v2Fixture)
 
     router = fixture.router02
-    
-    await router.setTreasury(treasury.address);
-    expect(await router.treasury()).to.equal(treasury.address);
+
+    await router.setTreasury(treasury.address)
+    expect(await router.treasury()).to.equal(treasury.address)
 
     DTT = await deployContract(wallet, DeflatingERC20, [expandTo18Decimals(10000)])
     DTT2 = await deployContract(wallet, DeflatingERC20, [expandTo18Decimals(10000)])

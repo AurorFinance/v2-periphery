@@ -15,7 +15,7 @@ const overrides = {
 }
 
 enum RouterVersion {
-  AegisV2Router01 = 'AegisV2Router01',
+  AegisV2Router01 = 'AegisV2Router01'
 }
 
 //No fees are taken as Library follows Aegis fee policy
