@@ -18,8 +18,8 @@ export async function deployRouter(factory:string, weth: string) : Promise<strin
 	const [deployer] = await ethers.getSigners();
 	console.log('ℹ️  Deploying contract with address:', deployer.address);
 
-	const ContractSource = await ethers.getContractFactory('UniswapV2Router02');
-	const deployedContract = await ContractSource.deploy(factory, weth, {
+	const ContractSource = await ethers.getContractFactory('AegisV2Router02');
+	const deployedContract = await ContractSource.deploy(factory, weth, process.env.AEGIS_TREASURY_ADDRESS!, {
 		gasLimit: GAS_LIMIT,
 	});
 
