@@ -10,8 +10,8 @@ jobs:
   test:
     strategy:
       matrix:
-        node: ['10.24.1']
-        os: [ubuntu-bionic]
+        node: ['10.x']
+        os: [ubuntu-latest]
 
     runs-on: ${{ matrix.os }}
 
