@@ -4,3 +4,4 @@ build/
 deployment/artifacts/
 deployment/cache/
 deployment/contracts/
+deployment/integration-test/out/*
