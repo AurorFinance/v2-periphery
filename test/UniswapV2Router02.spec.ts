@@ -127,7 +127,7 @@ describe('fee-on-transfer tokens', () => {
     mnemonic: 'horn horn horn horn horn horn horn horn horn horn horn horn',
     gasLimit: 9999999
   })
-  const [wallet] = provider.getWallets()
+  const [wallet, treasury] = provider.getWallets()
   const loadFixture = createFixtureLoader(provider, [wallet])
 
   let DTT: Contract
@@ -139,6 +139,9 @@ describe('fee-on-transfer tokens', () => {
 
     WETH = fixture.WETH
     router = fixture.router02
+
+    await router.setTreasury(treasury.address);
+    expect(await router.treasury()).to.equal(treasury.address);
 
     DTT = await deployContract(wallet, DeflatingERC20, [expandTo18Decimals(10000)])
 
@@ -173,7 +176,7 @@ describe('fee-on-transfer tokens', () => {
     const WETHExpected = WETHInPair.mul(liquidity).div(totalSupply)
 
     await pair.approve(router.address, MaxUint256)
-    await expect(router.removeLiquidityETHSupportingFeeOnTransferTokens(
+    await router.removeLiquidityETHSupportingFeeOnTransferTokens(
       DTT.address,
       liquidity,
       NaiveDTTExpected,
@@ -181,7 +184,7 @@ describe('fee-on-transfer tokens', () => {
       wallet.address,
       MaxUint256,
       overrides
-    )).to.be.reverted;
+    )
   })
 
   it('removeLiquidityETHWithPermitSupportingFeeOnTransferTokens', async () => {
@@ -210,7 +213,7 @@ describe('fee-on-transfer tokens', () => {
     const WETHExpected = WETHInPair.mul(liquidity).div(totalSupply)
 
     await pair.approve(router.address, MaxUint256)
-    await expect(router.removeLiquidityETHWithPermitSupportingFeeOnTransferTokens(
+    await router.removeLiquidityETHWithPermitSupportingFeeOnTransferTokens(
       DTT.address,
       liquidity,
       NaiveDTTExpected,
@@ -222,7 +225,7 @@ describe('fee-on-transfer tokens', () => {
       r,
       s,
       overrides
-    )).to.be.reverted;
+    )
   })
 
   describe('swapExactTokensForTokensSupportingFeeOnTransferTokens', () => {
@@ -239,14 +242,16 @@ describe('fee-on-transfer tokens', () => {
     it('DTT -> WETH', async () => {
       await DTT.approve(router.address, MaxUint256)
 
-      await expect (router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+      await router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
         amountIn,
         0,
         [DTT.address, WETH.address],
         wallet.address,
         MaxUint256,
         overrides
-      )).to.be.reverted;
+      )
+
+      expect(await DTT.balanceOf(treasury.address)).to.equal('2970000000000000')
     })
 
     // WETH -> DTT
@@ -254,14 +259,16 @@ describe('fee-on-transfer tokens', () => {
       await WETH.deposit({ value: amountIn }) // mint WETH
       await WETH.approve(router.address, MaxUint256)
 
-      await expect (router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+      await router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
         amountIn,
         0,
         [WETH.address, DTT.address],
         wallet.address,
         MaxUint256,
         overrides
-      )).to.be.reverted;
+      )
+
+      expect(await WETH.balanceOf(treasury.address)).to.equal((new BigNumber(amountIn)).mul(3).div(1000))
     })
   })
 
@@ -274,7 +281,8 @@ describe('fee-on-transfer tokens', () => {
     const swapAmount = expandTo18Decimals(1)
     await addLiquidity(DTTAmount, ETHAmount)
 
-    await expect (router.swapExactETHForTokensSupportingFeeOnTransferTokens(
+    const beforeETHBalance = await provider.getBalance(treasury.address);
+    await router.swapExactETHForTokensSupportingFeeOnTransferTokens(
       0,
       [WETH.address, DTT.address],
       wallet.address,
@@ -283,7 +291,9 @@ describe('fee-on-transfer tokens', () => {
         ...overrides,
         value: swapAmount
       }
-    )).to.be.reverted;
+    )
+
+    expect(await provider.getBalance(treasury.address)).to.equal(((new BigNumber(swapAmount)).mul(3).div(1000)).add(beforeETHBalance))
   })
 
   // DTT -> ETH
@@ -297,14 +307,16 @@ describe('fee-on-transfer tokens', () => {
     await addLiquidity(DTTAmount, ETHAmount)
     await DTT.approve(router.address, MaxUint256)
 
-    await expect (router.swapExactTokensForETHSupportingFeeOnTransferTokens(
+    await router.swapExactTokensForETHSupportingFeeOnTransferTokens(
       swapAmount,
       0,
       [DTT.address, WETH.address],
       wallet.address,
       MaxUint256,
       overrides
-    )).to.be.reverted;
+    )
+    
+    expect(await DTT.balanceOf(treasury.address)).to.equal('2970000000000000')
   })
 })
 
@@ -314,7 +326,7 @@ describe('fee-on-transfer tokens: reloaded', () => {
     mnemonic: 'horn horn horn horn horn horn horn horn horn horn horn horn',
     gasLimit: 9999999
   })
-  const [wallet] = provider.getWallets()
+  const [wallet, treasury] = provider.getWallets()
   const loadFixture = createFixtureLoader(provider, [wallet])
 
   let DTT: Contract
@@ -324,6 +336,9 @@ describe('fee-on-transfer tokens: reloaded', () => {
     const fixture = await loadFixture(v2Fixture)
 
     router = fixture.router02
+    
+    await router.setTreasury(treasury.address);
+    expect(await router.treasury()).to.equal(treasury.address);
 
     DTT = await deployContract(wallet, DeflatingERC20, [expandTo18Decimals(10000)])
     DTT2 = await deployContract(wallet, DeflatingERC20, [expandTo18Decimals(10000)])
@@ -367,14 +382,16 @@ describe('fee-on-transfer tokens: reloaded', () => {
     it('DTT -> DTT2', async () => {
       await DTT.approve(router.address, MaxUint256)
 
-      await expect(router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+      await router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
         amountIn,
         0,
         [DTT.address, DTT2.address],
         wallet.address,
         MaxUint256,
         overrides
-      )).to.be.reverted;
+      )
+
+      expect(await DTT.balanceOf(treasury.address)).to.equal('2970000000000000')
     })
   })
 })

@@ -515,7 +515,7 @@ describe('AegisV2Router{01}', () => {
           const receipt = await tx.wait()
           expect(receipt.gasUsed).to.eq(
             {
-              [RouterVersion.AegisV2Router01]: 115312
+              [RouterVersion.AegisV2Router01]: 145312
             }[routerVersion as RouterVersion]
           )
         }).retries(3)

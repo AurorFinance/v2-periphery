@@ -25,7 +25,7 @@ describe('AegisV2Router{02}', () => {
       mnemonic: 'horn horn horn horn horn horn horn horn horn horn horn horn',
       gasLimit: 9999999
     })
-    const [wallet] = provider.getWallets()
+    const [wallet, treasury] = provider.getWallets()
     const loadFixture = createFixtureLoader(provider, [wallet])
 
     let token0: Contract
@@ -50,6 +50,9 @@ describe('AegisV2Router{02}', () => {
       pair = fixture.pair
       WETHPair = fixture.WETHPair
       routerEventEmitter = fixture.routerEventEmitter
+
+      await router.setTreasury(treasury.address);
+      expect(await router.treasury()).to.eqls(treasury.address);
     })
 
     afterEach(async function() {
@@ -323,6 +326,8 @@ describe('AegisV2Router{02}', () => {
           )
             .to.emit(token0, 'Transfer')
             .withArgs(wallet.address, pair.address, swapAmount.mul(997).div(1000))
+            .to.emit(token0, 'Transfer')
+            .withArgs(wallet.address, treasury.address, swapAmount.mul(3).div(1000))
             .to.emit(token1, 'Transfer')
             .withArgs(pair.address, wallet.address, expectedOutputAmount)
             .to.emit(pair, 'Sync')
@@ -366,7 +371,7 @@ describe('AegisV2Router{02}', () => {
           const receipt = await tx.wait()
           expect(receipt.gasUsed).to.eq(
             {
-              [RouterVersion.AegisV2Router02]: 118360
+              [RouterVersion.AegisV2Router02]: 137560
             }[routerVersion as RouterVersion]
           )
         }).retries(3)
@@ -396,6 +401,8 @@ describe('AegisV2Router{02}', () => {
           )
             .to.emit(token0, 'Transfer')
             .withArgs(wallet.address, pair.address, expectedSwapAmount)
+            .to.emit(token0, 'Transfer')
+            .withArgs(wallet.address, treasury.address, expectedSwapAmount.mul(3).div(1000))
             .to.emit(token1, 'Transfer')
             .withArgs(pair.address, wallet.address, outputAmount)
             .to.emit(pair, 'Sync')
@@ -439,6 +446,7 @@ describe('AegisV2Router{02}', () => {
 
         it('happy path', async () => {
           const WETHPairToken0 = await WETHPair.token0()
+          const beforeSwapTreasuryETHBalance = await treasury.getBalance();
           await expect(
             router.swapExactETHForTokens(0, [WETH.address, WETHPartner.address], wallet.address, MaxUint256, {
               ...overrides,
@@ -467,6 +475,8 @@ describe('AegisV2Router{02}', () => {
               WETHPairToken0 === WETHPartner.address ? 0 : expectedOutputAmount,
               wallet.address
             )
+
+          expect(await treasury.getBalance()).to.equal((new BigNumber(swapAmount).mul(3).div(1000)).add(beforeSwapTreasuryETHBalance))
         })
 
         it('amounts', async () => {
@@ -548,6 +558,8 @@ describe('AegisV2Router{02}', () => {
           )
             .to.emit(WETHPartner, 'Transfer')
             .withArgs(wallet.address, WETHPair.address, expectedSwapAmount)
+            .to.emit(WETHPartner, 'Transfer')
+            .withArgs(wallet.address, treasury.address, expectedSwapAmount.mul(3).div(1000))
             .to.emit(WETH, 'Transfer')
             .withArgs(WETHPair.address, router.address, outputAmount)
             .to.emit(WETHPair, 'Sync')
@@ -616,6 +628,8 @@ describe('AegisV2Router{02}', () => {
           )
             .to.emit(WETHPartner, 'Transfer')
             .withArgs(wallet.address, WETHPair.address, swapAmount.mul(997).div(1000))
+            .to.emit(WETHPartner, 'Transfer')
+            .withArgs(wallet.address, treasury.address, swapAmount.mul(3).div(1000))
             .to.emit(WETH, 'Transfer')
             .withArgs(WETHPair.address, router.address, expectedOutputAmount)
             .to.emit(WETHPair, 'Sync')
@@ -671,6 +685,7 @@ describe('AegisV2Router{02}', () => {
 
         it('happy path', async () => {
           const WETHPairToken0 = await WETHPair.token0()
+          const beforeSwapTreasuryETHBalance = await treasury.getBalance();
           await expect(
             router.swapETHForExactTokens(
               outputAmount,
@@ -705,6 +720,8 @@ describe('AegisV2Router{02}', () => {
               WETHPairToken0 === WETHPartner.address ? 0 : outputAmount,
               wallet.address
             )
+
+          expect(await treasury.getBalance()).to.equal((new BigNumber(expectedSwapAmount).mul(3).div(1000)).add(beforeSwapTreasuryETHBalance))
         })
 
         it('amounts', async () => {
