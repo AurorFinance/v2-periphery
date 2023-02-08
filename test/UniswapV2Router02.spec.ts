@@ -3,7 +3,7 @@ import { solidity, MockProvider, createFixtureLoader, deployContract } from 'eth
 import { Contract } from 'ethers'
 import { BigNumber, bigNumberify } from 'ethers/utils'
 import { MaxUint256 } from 'ethers/constants'
-import IUniswapV2Pair from '@uniswap/v2-core/build/IUniswapV2Pair.json'
+import { IAegisV2Pair } from './shared/abi'
 
 import { v2Fixture } from './shared/fixtures'
 import { expandTo18Decimals, getApprovalDigest, MINIMUM_LIQUIDITY } from './shared/utilities'
@@ -17,7 +17,7 @@ const overrides = {
   gasLimit: 9999999
 }
 
-describe('UniswapV2Router02', () => {
+describe('AegisV2Router02', () => {
   const provider = new MockProvider({
     hardfork: 'istanbul',
     mnemonic: 'horn horn horn horn horn horn horn horn horn horn horn horn',
@@ -40,39 +40,39 @@ describe('UniswapV2Router02', () => {
     expect(await router.quote(bigNumberify(1), bigNumberify(100), bigNumberify(200))).to.eq(bigNumberify(2))
     expect(await router.quote(bigNumberify(2), bigNumberify(200), bigNumberify(100))).to.eq(bigNumberify(1))
     await expect(router.quote(bigNumberify(0), bigNumberify(100), bigNumberify(200))).to.be.revertedWith(
-      'UniswapV2Library: INSUFFICIENT_AMOUNT'
+      'AegisV2Library: INSUFFICIENT_AMOUNT'
     )
     await expect(router.quote(bigNumberify(1), bigNumberify(0), bigNumberify(200))).to.be.revertedWith(
-      'UniswapV2Library: INSUFFICIENT_LIQUIDITY'
+      'AegisV2Library: INSUFFICIENT_LIQUIDITY'
     )
     await expect(router.quote(bigNumberify(1), bigNumberify(100), bigNumberify(0))).to.be.revertedWith(
-      'UniswapV2Library: INSUFFICIENT_LIQUIDITY'
+      'AegisV2Library: INSUFFICIENT_LIQUIDITY'
     )
   })
 
   it('getAmountOut', async () => {
     expect(await router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(100))).to.eq(bigNumberify(1))
     await expect(router.getAmountOut(bigNumberify(0), bigNumberify(100), bigNumberify(100))).to.be.revertedWith(
-      'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT'
+      'AegisV2Library: INSUFFICIENT_INPUT_AMOUNT'
     )
     await expect(router.getAmountOut(bigNumberify(2), bigNumberify(0), bigNumberify(100))).to.be.revertedWith(
-      'UniswapV2Library: INSUFFICIENT_LIQUIDITY'
+      'AegisV2Library: INSUFFICIENT_LIQUIDITY'
     )
     await expect(router.getAmountOut(bigNumberify(2), bigNumberify(100), bigNumberify(0))).to.be.revertedWith(
-      'UniswapV2Library: INSUFFICIENT_LIQUIDITY'
+      'AegisV2Library: INSUFFICIENT_LIQUIDITY'
     )
   })
 
   it('getAmountIn', async () => {
     expect(await router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(100))).to.eq(bigNumberify(2))
     await expect(router.getAmountIn(bigNumberify(0), bigNumberify(100), bigNumberify(100))).to.be.revertedWith(
-      'UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT'
+      'AegisV2Library: INSUFFICIENT_OUTPUT_AMOUNT'
     )
     await expect(router.getAmountIn(bigNumberify(1), bigNumberify(0), bigNumberify(100))).to.be.revertedWith(
-      'UniswapV2Library: INSUFFICIENT_LIQUIDITY'
+      'AegisV2Library: INSUFFICIENT_LIQUIDITY'
     )
     await expect(router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(0))).to.be.revertedWith(
-      'UniswapV2Library: INSUFFICIENT_LIQUIDITY'
+      'AegisV2Library: INSUFFICIENT_LIQUIDITY'
     )
   })
 
@@ -92,7 +92,7 @@ describe('UniswapV2Router02', () => {
     )
 
     await expect(router.getAmountsOut(bigNumberify(2), [token0.address])).to.be.revertedWith(
-      'UniswapV2Library: INVALID_PATH'
+      'AegisV2Library: INVALID_PATH'
     )
     const path = [token0.address, token1.address]
     expect(await router.getAmountsOut(bigNumberify(2), path)).to.deep.eq([bigNumberify(2), bigNumberify(1)])
@@ -114,7 +114,7 @@ describe('UniswapV2Router02', () => {
     )
 
     await expect(router.getAmountsIn(bigNumberify(1), [token0.address])).to.be.revertedWith(
-      'UniswapV2Library: INVALID_PATH'
+      'AegisV2Library: INVALID_PATH'
     )
     const path = [token0.address, token1.address]
     expect(await router.getAmountsIn(bigNumberify(1), path)).to.deep.eq([bigNumberify(2), bigNumberify(1)])
@@ -127,7 +127,7 @@ describe('fee-on-transfer tokens', () => {
     mnemonic: 'horn horn horn horn horn horn horn horn horn horn horn horn',
     gasLimit: 9999999
   })
-  const [wallet] = provider.getWallets()
+  const [wallet, treasury] = provider.getWallets()
   const loadFixture = createFixtureLoader(provider, [wallet])
 
   let DTT: Contract
@@ -140,12 +140,15 @@ describe('fee-on-transfer tokens', () => {
     WETH = fixture.WETH
     router = fixture.router02
 
+    await router.setTreasury(treasury.address)
+    expect(await router.treasury()).to.equal(treasury.address)
+
     DTT = await deployContract(wallet, DeflatingERC20, [expandTo18Decimals(10000)])
 
     // make a DTT<>WETH pair
     await fixture.factoryV2.createPair(DTT.address, WETH.address)
     const pairAddress = await fixture.factoryV2.getPair(DTT.address, WETH.address)
-    pair = new Contract(pairAddress, JSON.stringify(IUniswapV2Pair.abi), provider).connect(wallet)
+    pair = new Contract(pairAddress, JSON.stringify(IAegisV2Pair.abi), provider).connect(wallet)
   })
 
   afterEach(async function() {
@@ -247,6 +250,8 @@ describe('fee-on-transfer tokens', () => {
         MaxUint256,
         overrides
       )
+
+      expect(await DTT.balanceOf(treasury.address)).to.equal('2970000000000000')
     })
 
     // WETH -> DTT
@@ -262,6 +267,8 @@ describe('fee-on-transfer tokens', () => {
         MaxUint256,
         overrides
       )
+
+      expect(await WETH.balanceOf(treasury.address)).to.equal(new BigNumber(amountIn).mul(3).div(1000))
     })
   })
 
@@ -274,6 +281,7 @@ describe('fee-on-transfer tokens', () => {
     const swapAmount = expandTo18Decimals(1)
     await addLiquidity(DTTAmount, ETHAmount)
 
+    const beforeETHBalance = await provider.getBalance(treasury.address)
     await router.swapExactETHForTokensSupportingFeeOnTransferTokens(
       0,
       [WETH.address, DTT.address],
@@ -283,6 +291,13 @@ describe('fee-on-transfer tokens', () => {
         ...overrides,
         value: swapAmount
       }
+    )
+
+    expect(await provider.getBalance(treasury.address)).to.equal(
+      new BigNumber(swapAmount)
+        .mul(3)
+        .div(1000)
+        .add(beforeETHBalance)
     )
   })
 
@@ -305,6 +320,8 @@ describe('fee-on-transfer tokens', () => {
       MaxUint256,
       overrides
     )
+
+    expect(await DTT.balanceOf(treasury.address)).to.equal('2970000000000000')
   })
 })
 
@@ -314,7 +331,7 @@ describe('fee-on-transfer tokens: reloaded', () => {
     mnemonic: 'horn horn horn horn horn horn horn horn horn horn horn horn',
     gasLimit: 9999999
   })
-  const [wallet] = provider.getWallets()
+  const [wallet, treasury] = provider.getWallets()
   const loadFixture = createFixtureLoader(provider, [wallet])
 
   let DTT: Contract
@@ -324,6 +341,9 @@ describe('fee-on-transfer tokens: reloaded', () => {
     const fixture = await loadFixture(v2Fixture)
 
     router = fixture.router02
+
+    await router.setTreasury(treasury.address)
+    expect(await router.treasury()).to.equal(treasury.address)
 
     DTT = await deployContract(wallet, DeflatingERC20, [expandTo18Decimals(10000)])
     DTT2 = await deployContract(wallet, DeflatingERC20, [expandTo18Decimals(10000)])
@@ -375,6 +395,8 @@ describe('fee-on-transfer tokens: reloaded', () => {
         MaxUint256,
         overrides
       )
+
+      expect(await DTT.balanceOf(treasury.address)).to.equal('2970000000000000')
     })
   })
 })

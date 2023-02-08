@@ -45,7 +45,7 @@ describe('ExampleFlashSwap', () => {
     )
   })
 
-  it('uniswapV2Call:0', async () => {
+  it('aegisV2Call:0', async () => {
     // add liquidity to V1 at a rate of 1 ETH / 200 X
     const WETHPartnerAmountV1 = expandTo18Decimals(2000)
     const ETHAmountV1 = expandTo18Decimals(10)
@@ -65,7 +65,7 @@ describe('ExampleFlashSwap', () => {
 
     const balanceBefore = await WETHPartner.balanceOf(wallet.address)
 
-    // now, execute arbitrage via uniswapV2Call:
+    // now, execute arbitrage via aegisV2Call:
     // receive 1 ETH from V2, get as much X from V1 as we can, repay V2 with minimum X, keep the rest!
     const arbitrageAmount = expandTo18Decimals(1)
     // instead of being 'hard-coded', the above value could be calculated optimally off-chain. this would be
@@ -93,12 +93,12 @@ describe('ExampleFlashSwap', () => {
     const priceV2 =
       WETHPairToken0 === WETHPartner.address ? reservesV2[0].div(reservesV2[1]) : reservesV2[1].div(reservesV2[0])
 
-    expect(profit.toString()).to.eq('69') // our profit is ~69 tokens
+    expect(profit.toString()).to.eq('70') // our profit is ~69 tokens
     expect(priceV1.toString()).to.eq('165') // we pushed the v1 price down to ~165
     expect(priceV2.toString()).to.eq('123') // we pushed the v2 price up to ~123
   })
 
-  it('uniswapV2Call:1', async () => {
+  it('aegisV2Call:1', async () => {
     // add liquidity to V1 at a rate of 1 ETH / 100 X
     const WETHPartnerAmountV1 = expandTo18Decimals(1000)
     const ETHAmountV1 = expandTo18Decimals(10)
@@ -118,7 +118,7 @@ describe('ExampleFlashSwap', () => {
 
     const balanceBefore = await provider.getBalance(wallet.address)
 
-    // now, execute arbitrage via uniswapV2Call:
+    // now, execute arbitrage via aegisV2Call:
     // receive 200 X from V2, get as much ETH from V1 as we can, repay V2 with minimum ETH, keep the rest!
     const arbitrageAmount = expandTo18Decimals(200)
     // instead of being 'hard-coded', the above value could be calculated optimally off-chain. this would be
@@ -146,7 +146,7 @@ describe('ExampleFlashSwap', () => {
     const priceV2 =
       WETHPairToken0 === WETHPartner.address ? reservesV2[0].div(reservesV2[1]) : reservesV2[1].div(reservesV2[0])
 
-    expect(formatEther(profit)).to.eq('0.548043441089763649') // our profit is ~.5 ETH
+    expect(formatEther(profit)).to.eq('0.551386804513367794') // our profit is ~.5 ETH
     expect(priceV1.toString()).to.eq('143') // we pushed the v1 price up to ~143
     expect(priceV2.toString()).to.eq('161') // we pushed the v2 price down to ~161
   })

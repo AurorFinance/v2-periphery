@@ -1,0 +1,1 @@
+# Please update the abi if v2-core contracts are changed!

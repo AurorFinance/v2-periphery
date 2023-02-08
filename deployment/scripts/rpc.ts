@@ -1,0 +1,1 @@
+export const FUJI_RPC_URL = 'https://api.avax-test.network/ext/bc/C/rpc';
