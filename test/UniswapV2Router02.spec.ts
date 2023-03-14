@@ -34,6 +34,8 @@ describe('AegisV2Router02', () => {
     token0 = fixture.token0
     token1 = fixture.token1
     router = fixture.router02
+
+    await fixture.factoryV2.connect(wallet).setAllowedCaller(fixture.router02.address); 
   })
 
   it('quote', async () => {
@@ -139,6 +141,8 @@ describe('fee-on-transfer tokens', () => {
 
     WETH = fixture.WETH
     router = fixture.router02
+
+    await fixture.factoryV2.connect(wallet).setAllowedCaller(router.address);
 
     await router.setTreasury(treasury.address)
     expect(await router.treasury()).to.equal(treasury.address)
@@ -344,6 +348,8 @@ describe('fee-on-transfer tokens: reloaded', () => {
 
     await router.setTreasury(treasury.address)
     expect(await router.treasury()).to.equal(treasury.address)
+
+    await fixture.factoryV2.connect(wallet).setAllowedCaller(router.address);
 
     DTT = await deployContract(wallet, DeflatingERC20, [expandTo18Decimals(10000)])
     DTT2 = await deployContract(wallet, DeflatingERC20, [expandTo18Decimals(10000)])
