@@ -52,7 +52,7 @@ describe('AegisV2Router{01}', () => {
       WETHPair = fixture.WETHPair
       routerEventEmitter = fixture.routerEventEmitter
 
-      await factory.connect(wallet).setAllowedCaller(router.address);
+      await factory.connect(wallet).setAllowedCaller(router.address)
     })
 
     afterEach(async function() {
@@ -140,12 +140,12 @@ describe('AegisV2Router{01}', () => {
 
       async function addLiquidity(token0Amount: BigNumber, token1Amount: BigNumber) {
         //set the wallet signer as temporary allowed caller
-        await factory.connect(wallet).setAllowedCaller(wallet.address);
+        await factory.connect(wallet).setAllowedCaller(wallet.address)
         await token0.transfer(pair.address, token0Amount)
         await token1.transfer(pair.address, token1Amount)
         await pair.mint(wallet.address, overrides)
-        //come back to the router 
-        await factory.connect(wallet).setAllowedCaller(router.address);
+        //come back to the router
+        await factory.connect(wallet).setAllowedCaller(router.address)
       }
       it('removeLiquidity', async () => {
         const token0Amount = expandTo18Decimals(1)
@@ -188,7 +188,7 @@ describe('AegisV2Router{01}', () => {
 
       it('removeLiquidityETH', async () => {
         //set the wallet signer as temporary allowed caller
-        await factory.connect(wallet).setAllowedCaller(wallet.address);
+        await factory.connect(wallet).setAllowedCaller(wallet.address)
 
         const WETHPartnerAmount = expandTo18Decimals(1)
         const ETHAmount = expandTo18Decimals(4)
@@ -198,7 +198,7 @@ describe('AegisV2Router{01}', () => {
         await WETHPair.mint(wallet.address, overrides)
 
         //coming back to router
-        await factory.connect(wallet).setAllowedCaller(router.address);
+        await factory.connect(wallet).setAllowedCaller(router.address)
 
         const expectedLiquidity = expandTo18Decimals(2)
         const WETHPairToken0 = await WETHPair.token0()
@@ -279,7 +279,7 @@ describe('AegisV2Router{01}', () => {
 
       it('removeLiquidityETHWithPermit', async () => {
         //set the wallet signer as temporary allowed caller
-        await factory.connect(wallet).setAllowedCaller(wallet.address);
+        await factory.connect(wallet).setAllowedCaller(wallet.address)
 
         const WETHPartnerAmount = expandTo18Decimals(1)
         const ETHAmount = expandTo18Decimals(4)
@@ -289,7 +289,7 @@ describe('AegisV2Router{01}', () => {
         await WETHPair.mint(wallet.address, overrides)
 
         //coming back to router
-        await factory.connect(wallet).setAllowedCaller(router.address);
+        await factory.connect(wallet).setAllowedCaller(router.address)
 
         const expectedLiquidity = expandTo18Decimals(2)
 
@@ -373,10 +373,10 @@ describe('AegisV2Router{01}', () => {
           await mineBlock(provider, (await provider.getBlock('latest')).timestamp + 1)
 
           //set the wallet signer as temporary allowed caller
-          await factory.connect(wallet).setAllowedCaller(wallet.address);
+          await factory.connect(wallet).setAllowedCaller(wallet.address)
           await pair.sync(overrides)
           //coming back to router
-          await factory.connect(wallet).setAllowedCaller(router.address);
+          await factory.connect(wallet).setAllowedCaller(router.address)
 
           await token0.approve(router.address, MaxUint256)
           await mineBlock(provider, (await provider.getBlock('latest')).timestamp + 1)
@@ -455,13 +455,13 @@ describe('AegisV2Router{01}', () => {
 
         beforeEach(async () => {
           //set the wallet signer as temporary allowed caller
-          await factory.connect(wallet).setAllowedCaller(wallet.address);
+          await factory.connect(wallet).setAllowedCaller(wallet.address)
           await WETHPartner.transfer(WETHPair.address, WETHPartnerAmount)
           await WETH.deposit({ value: ETHAmount })
           await WETH.transfer(WETHPair.address, ETHAmount)
           await WETHPair.mint(wallet.address, overrides)
           //coming back to router
-          await factory.connect(wallet).setAllowedCaller(router.address);
+          await factory.connect(wallet).setAllowedCaller(router.address)
 
           await token0.approve(router.address, MaxUint256)
         })
@@ -518,7 +518,7 @@ describe('AegisV2Router{01}', () => {
 
         it('gas', async () => {
           //set the wallet signer as temporary allowed caller
-          await factory.connect(wallet).setAllowedCaller(wallet.address);
+          await factory.connect(wallet).setAllowedCaller(wallet.address)
 
           const WETHPartnerAmount = expandTo18Decimals(10)
           const ETHAmount = expandTo18Decimals(5)
@@ -532,7 +532,7 @@ describe('AegisV2Router{01}', () => {
           await pair.sync(overrides)
 
           //coming back to router
-          await factory.connect(wallet).setAllowedCaller(router.address);
+          await factory.connect(wallet).setAllowedCaller(router.address)
 
           const swapAmount = expandTo18Decimals(1)
           await mineBlock(provider, (await provider.getBlock('latest')).timestamp + 1)
@@ -563,13 +563,13 @@ describe('AegisV2Router{01}', () => {
 
         beforeEach(async () => {
           //set the wallet signer as temporary allowed caller
-          await factory.connect(wallet).setAllowedCaller(wallet.address);
+          await factory.connect(wallet).setAllowedCaller(wallet.address)
           await WETHPartner.transfer(WETHPair.address, WETHPartnerAmount)
           await WETH.deposit({ value: ETHAmount })
           await WETH.transfer(WETHPair.address, ETHAmount)
           await WETHPair.mint(wallet.address, overrides)
           //coming back to router
-          await factory.connect(wallet).setAllowedCaller(router.address);
+          await factory.connect(wallet).setAllowedCaller(router.address)
         })
 
         it('happy path', async () => {
@@ -635,13 +635,13 @@ describe('AegisV2Router{01}', () => {
 
         beforeEach(async () => {
           //set the wallet signer as temporary allowed caller
-          await factory.connect(wallet).setAllowedCaller(wallet.address);
+          await factory.connect(wallet).setAllowedCaller(wallet.address)
           await WETHPartner.transfer(WETHPair.address, WETHPartnerAmount)
           await WETH.deposit({ value: ETHAmount })
           await WETH.transfer(WETHPair.address, ETHAmount)
           await WETHPair.mint(wallet.address, overrides)
           //coming back to router
-          await factory.connect(wallet).setAllowedCaller(router.address);
+          await factory.connect(wallet).setAllowedCaller(router.address)
         })
 
         it('happy path', async () => {
@@ -707,13 +707,13 @@ describe('AegisV2Router{01}', () => {
 
         beforeEach(async () => {
           //set the wallet signer as temporary allowed caller
-          await factory.connect(wallet).setAllowedCaller(wallet.address);
+          await factory.connect(wallet).setAllowedCaller(wallet.address)
           await WETHPartner.transfer(WETHPair.address, WETHPartnerAmount)
           await WETH.deposit({ value: ETHAmount })
           await WETH.transfer(WETHPair.address, ETHAmount)
           await WETHPair.mint(wallet.address, overrides)
           //coming back to router
-          await factory.connect(wallet).setAllowedCaller(router.address);
+          await factory.connect(wallet).setAllowedCaller(router.address)
         })
 
         it('happy path', async () => {
