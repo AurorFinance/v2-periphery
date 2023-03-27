@@ -1,1 +1,1 @@
-# Please update the abi if v2-core contracts are changed!
+# Please update the `abi.ts` if v2-core contracts are changed!

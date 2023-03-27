@@ -76,6 +76,7 @@ describe('ExampleComputeLiquidityValue', () => {
     })
 
     it('correct after swap', async () => {
+      await factory.connect(wallet).setAllowedCaller(router.address)
       await token0.approve(router.address, MaxUint256, overrides)
       await router.swapExactTokensForTokens(
         expandTo18Decimals(10),
@@ -250,7 +251,7 @@ describe('ExampleComputeLiquidityValue', () => {
             100,
             expandTo18Decimals(5)
           )
-        ).to.eq('12771')
+        ).to.eq('12794')
       })
 
       it('gas higher price', async () => {
@@ -262,7 +263,7 @@ describe('ExampleComputeLiquidityValue', () => {
             105,
             expandTo18Decimals(5)
           )
-        ).to.eq('13478')
+        ).to.eq('13501')
       })
 
       it('gas lower price', async () => {
@@ -274,11 +275,12 @@ describe('ExampleComputeLiquidityValue', () => {
             95,
             expandTo18Decimals(5)
           )
-        ).to.eq('13513')
+        ).to.eq('13536')
       })
 
       describe('after a swap', () => {
         beforeEach('swap to ~1:25', async () => {
+          await factory.connect(wallet).setAllowedCaller(router.address)
           await token0.approve(router.address, MaxUint256, overrides)
           await router.swapExactTokensForTokens(
             expandTo18Decimals(10),

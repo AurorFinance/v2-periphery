@@ -61,6 +61,9 @@ export async function v2Fixture(provider: Web3Provider, [wallet]: Wallet[]): Pro
   const router01 = await deployContract(wallet, AegisV2Router01, [factoryV2.address, WETH.address], overrides)
   const router02 = await deployContract(wallet, AegisV2Router02, [factoryV2.address, WETH.address, wallet.address], overrides)
 
+  // set the allowed caller for the v2-core
+  await factoryV2.connect(wallet).setAllowedCaller(wallet.address);
+
   // event emitter for testing
   const routerEventEmitter = await deployContract(wallet, RouterEventEmitter, [])
 

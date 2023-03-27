@@ -21,7 +21,7 @@ library AegisV2Library {
                 hex'ff',
                 factory,
                 keccak256(abi.encodePacked(token0, token1)),
-                hex'344ae39072c7699cff215e902894180dff372fcc1bbde388c3cbe055f67d3eb6' // init code hash
+                hex'fc3a459f9eeeb88f9757018d5c839840caa6aca59d929a277219d64c40020b69' // init code hash
             ))));
     }
 
