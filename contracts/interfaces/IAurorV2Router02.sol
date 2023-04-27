@@ -1,8 +1,8 @@
 pragma solidity >=0.6.2;
 
-import './IAegisV2Router01.sol';
+import './IAurorV2Router01.sol';
 
-interface IAegisV2Router02 is IAegisV2Router01 {
+interface IAurorV2Router02 is IAurorV2Router01 {
     function removeLiquidityETHSupportingFeeOnTransferTokens(
         address token,
         uint liquidity,

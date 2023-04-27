@@ -4,8 +4,8 @@ import * as dotenv from 'dotenv';
 dotenv.config({path: process.cwd() + '/scripts/process.env'});
 
 //const adminAddresses = {
-//  feeToSetter: process.env.AEGIS_MANAGER_ADDRESS!,
-//	feeTo: process.env.AEGIS_TREASURY_ADDRESS!,
+//  feeToSetter: process.env.AUROR_MANAGER_ADDRESS!,
+//	feeTo: process.env.AUROR_TREASURY_ADDRESS!,
 //}
 
 const GAS_LIMIT = 6000000;
@@ -18,8 +18,8 @@ export async function deployRouter(factory:string, weth: string) : Promise<strin
 	const [deployer] = await ethers.getSigners();
 	console.log('ℹ️  Deploying contract with address:', deployer.address);
 
-	const ContractSource = await ethers.getContractFactory('AegisV2Router02');
-	const deployedContract = await ContractSource.deploy(factory, weth, process.env.AEGIS_TREASURY_ADDRESS!, {
+	const ContractSource = await ethers.getContractFactory('AurorV2Router02');
+	const deployedContract = await ContractSource.deploy(factory, weth, process.env.AUROR_TREASURY_ADDRESS!, {
 		gasLimit: GAS_LIMIT,
 	});
 

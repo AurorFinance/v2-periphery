@@ -2,19 +2,19 @@ pragma solidity =0.6.6;
 
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 
-import './interfaces/IAegisV2Migrator.sol';
-import './interfaces/V1/IAegisV1Factory.sol';
-import './interfaces/V1/IAegisV1Exchange.sol';
-import './interfaces/IAegisV2Router01.sol';
+import './interfaces/IAurorV2Migrator.sol';
+import './interfaces/V1/IAurorV1Factory.sol';
+import './interfaces/V1/IAurorV1Exchange.sol';
+import './interfaces/IAurorV2Router01.sol';
 import './interfaces/IERC20.sol';
 
-contract AegisV2Migrator is IAegisV2Migrator {
-    IAegisV1Factory immutable factoryV1;
-    IAegisV2Router01 immutable router;
+contract AurorV2Migrator is IAurorV2Migrator {
+    IAurorV1Factory immutable factoryV1;
+    IAurorV2Router01 immutable router;
 
     constructor(address _factoryV1, address _router) public {
-        factoryV1 = IAegisV1Factory(_factoryV1);
-        router = IAegisV2Router01(_router);
+        factoryV1 = IAurorV1Factory(_factoryV1);
+        router = IAurorV2Router01(_router);
     }
 
     // needs to accept ETH from any v1 exchange and the router. ideally this could be enforced, as in the router,
@@ -25,7 +25,7 @@ contract AegisV2Migrator is IAegisV2Migrator {
         external
         override
     {
-        IAegisV1Exchange exchangeV1 = IAegisV1Exchange(factoryV1.getExchange(token));
+        IAurorV1Exchange exchangeV1 = IAurorV1Exchange(factoryV1.getExchange(token));
         uint liquidityV1 = exchangeV1.balanceOf(msg.sender);
         require(exchangeV1.transferFrom(msg.sender, address(this), liquidityV1), 'TRANSFER_FROM_FAILED');
         (uint amountETHV1, uint amountTokenV1) = exchangeV1.removeLiquidity(liquidityV1, 1, 1, uint(-1));

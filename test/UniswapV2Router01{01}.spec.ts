@@ -15,11 +15,11 @@ const overrides = {
 }
 
 enum RouterVersion {
-  AegisV2Router01 = 'AegisV2Router01'
+  AurorV2Router01 = 'AurorV2Router01'
 }
 
-//No fees are taken as Library follows Aegis fee policy
-describe('AegisV2Router{01}', () => {
+//No fees are taken as Library follows Auror fee policy
+describe('AurorV2Router{01}', () => {
   for (const routerVersion of Object.keys(RouterVersion)) {
     const provider = new MockProvider({
       hardfork: 'istanbul',
@@ -46,7 +46,7 @@ describe('AegisV2Router{01}', () => {
       WETHPartner = fixture.WETHPartner
       factory = fixture.factoryV2
       router = {
-        [RouterVersion.AegisV2Router01]: fixture.router01
+        [RouterVersion.AurorV2Router01]: fixture.router01
       }[routerVersion as RouterVersion]
       pair = fixture.pair
       WETHPair = fixture.WETHPair
@@ -391,7 +391,7 @@ describe('AegisV2Router{01}', () => {
           const receipt = await tx.wait()
           expect(receipt.gasUsed).to.eq(
             {
-              [RouterVersion.AegisV2Router01]: 112033
+              [RouterVersion.AurorV2Router01]: 112033
             }[routerVersion as RouterVersion]
           )
         }).retries(3)
@@ -549,7 +549,7 @@ describe('AegisV2Router{01}', () => {
           const receipt = await tx.wait()
           expect(receipt.gasUsed).to.eq(
             {
-              [RouterVersion.AegisV2Router01]: 148857
+              [RouterVersion.AurorV2Router01]: 148857
             }[routerVersion as RouterVersion]
           )
         }).retries(3)

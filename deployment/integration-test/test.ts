@@ -1,4 +1,4 @@
-import { AmmManager } from './test_utils/aegisAmmManager';
+import { AmmManager } from './test_utils/aurorAmmManager';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 
@@ -6,7 +6,7 @@ import * as fs from 'fs';
 
 dotenv.config({ path: process.cwd() + '/scripts/process.env' });
 
-const manager: AmmManager = new AmmManager(process.env.AEGIS_MANAGER_ADDRESS!, process.env.AEGIS_MANAGER_KEY!)
+const manager: AmmManager = new AmmManager(process.env.AUROR_MANAGER_ADDRESS!, process.env.AUROR_MANAGER_KEY!)
 export async function test() {
   await manager.deployWrappedGasToken();
   await manager.deployAutomatedMarketMaker();
