@@ -1,9 +1,9 @@
 import {deployRouter} from './functions';
-import {WCRO} from './addresses-util';
+import {WETH} from './addresses-util';
 
 console.log('🚨 INIT_HASH_CODE changed?');
 
-deployRouter('0xaBB0509E666f30C7bcd7e0120BB97bbc5565F9F8', WCRO)
+deployRouter('0x085DC3D7d980A0968260bF83ebF9F581247f8e6c', WETH)
     .catch(error => {
     console.log(error);
     console.log("Deployment failed 🛑");
