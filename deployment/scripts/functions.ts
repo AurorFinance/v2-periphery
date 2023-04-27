@@ -19,9 +19,7 @@ export async function deployRouter(factory:string, weth: string) : Promise<strin
 	console.log('ℹ️  Deploying contract with address:', deployer.address);
 
 	const ContractSource = await ethers.getContractFactory('AurorV2Router02');
-	const deployedContract = await ContractSource.deploy(factory, weth, process.env.AUROR_TREASURY_ADDRESS!, {
-		gasLimit: GAS_LIMIT,
-	});
+	const deployedContract = await ContractSource.deploy(factory, weth, process.env.AUROR_TREASURY_ADDRESS!);
 
 	await deployedContract.deployed();
 
