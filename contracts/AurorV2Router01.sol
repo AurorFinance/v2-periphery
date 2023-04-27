@@ -1,19 +1,19 @@
 pragma solidity =0.6.6;
 
-import './v2-core/contracts/interfaces/IAegisV2Factory.sol';
+import './v2-core/contracts/interfaces/IAurorV2Factory.sol';
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 
-import './libraries/AegisV2Library.sol';
-import './interfaces/IAegisV2Router01.sol';
+import './libraries/AurorV2Library.sol';
+import './interfaces/IAurorV2Router01.sol';
 import './interfaces/IERC20.sol';
 import './interfaces/IWETH.sol';
 
-contract AegisV2Router01 is IAegisV2Router01 {
+contract AurorV2Router01 is IAurorV2Router01 {
     address public immutable override factory;
     address public immutable override WETH;
 
     modifier ensure(uint deadline) {
-        require(deadline >= block.timestamp, 'AegisV2Router: EXPIRED');
+        require(deadline >= block.timestamp, 'AurorV2Router: EXPIRED');
         _;
     }
 
@@ -36,21 +36,21 @@ contract AegisV2Router01 is IAegisV2Router01 {
         uint amountBMin
     ) private returns (uint amountA, uint amountB) {
         // create the pair if it doesn't exist yet
-        if (IAegisV2Factory(factory).getPair(tokenA, tokenB) == address(0)) {
-            IAegisV2Factory(factory).createPair(tokenA, tokenB);
+        if (IAurorV2Factory(factory).getPair(tokenA, tokenB) == address(0)) {
+            IAurorV2Factory(factory).createPair(tokenA, tokenB);
         }
-        (uint reserveA, uint reserveB) = AegisV2Library.getReserves(factory, tokenA, tokenB);
+        (uint reserveA, uint reserveB) = AurorV2Library.getReserves(factory, tokenA, tokenB);
         if (reserveA == 0 && reserveB == 0) {
             (amountA, amountB) = (amountADesired, amountBDesired);
         } else {
-            uint amountBOptimal = AegisV2Library.quote(amountADesired, reserveA, reserveB);
+            uint amountBOptimal = AurorV2Library.quote(amountADesired, reserveA, reserveB);
             if (amountBOptimal <= amountBDesired) {
-                require(amountBOptimal >= amountBMin, 'AegisV2Router: INSUFFICIENT_B_AMOUNT');
+                require(amountBOptimal >= amountBMin, 'AurorV2Router: INSUFFICIENT_B_AMOUNT');
                 (amountA, amountB) = (amountADesired, amountBOptimal);
             } else {
-                uint amountAOptimal = AegisV2Library.quote(amountBDesired, reserveB, reserveA);
+                uint amountAOptimal = AurorV2Library.quote(amountBDesired, reserveB, reserveA);
                 assert(amountAOptimal <= amountADesired);
-                require(amountAOptimal >= amountAMin, 'AegisV2Router: INSUFFICIENT_A_AMOUNT');
+                require(amountAOptimal >= amountAMin, 'AurorV2Router: INSUFFICIENT_A_AMOUNT');
                 (amountA, amountB) = (amountAOptimal, amountBDesired);
             }
         }
@@ -66,10 +66,10 @@ contract AegisV2Router01 is IAegisV2Router01 {
         uint deadline
     ) external override ensure(deadline) returns (uint amountA, uint amountB, uint liquidity) {
         (amountA, amountB) = _addLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin);
-        address pair = AegisV2Library.pairFor(factory, tokenA, tokenB);
+        address pair = AurorV2Library.pairFor(factory, tokenA, tokenB);
         TransferHelper.safeTransferFrom(tokenA, msg.sender, pair, amountA);
         TransferHelper.safeTransferFrom(tokenB, msg.sender, pair, amountB);
-        liquidity = IAegisV2Pair(pair).mint(to);
+        liquidity = IAurorV2Pair(pair).mint(to);
     }
     function addLiquidityETH(
         address token,
@@ -87,11 +87,11 @@ contract AegisV2Router01 is IAegisV2Router01 {
             amountTokenMin,
             amountETHMin
         );
-        address pair = AegisV2Library.pairFor(factory, token, WETH);
+        address pair = AurorV2Library.pairFor(factory, token, WETH);
         TransferHelper.safeTransferFrom(token, msg.sender, pair, amountToken);
         IWETH(WETH).deposit{value: amountETH}();
         assert(IWETH(WETH).transfer(pair, amountETH));
-        liquidity = IAegisV2Pair(pair).mint(to);
+        liquidity = IAurorV2Pair(pair).mint(to);
         if (msg.value > amountETH) TransferHelper.safeTransferETH(msg.sender, msg.value - amountETH); // refund dust eth, if any
     }
 
@@ -105,13 +105,13 @@ contract AegisV2Router01 is IAegisV2Router01 {
         address to,
         uint deadline
     ) public override ensure(deadline) returns (uint amountA, uint amountB) {
-        address pair = AegisV2Library.pairFor(factory, tokenA, tokenB);
-        IAegisV2Pair(pair).transferFrom(msg.sender, pair, liquidity); // send liquidity to pair
-        (uint amount0, uint amount1) = IAegisV2Pair(pair).burn(to);
-        (address token0,) = AegisV2Library.sortTokens(tokenA, tokenB);
+        address pair = AurorV2Library.pairFor(factory, tokenA, tokenB);
+        IAurorV2Pair(pair).transferFrom(msg.sender, pair, liquidity); // send liquidity to pair
+        (uint amount0, uint amount1) = IAurorV2Pair(pair).burn(to);
+        (address token0,) = AurorV2Library.sortTokens(tokenA, tokenB);
         (amountA, amountB) = tokenA == token0 ? (amount0, amount1) : (amount1, amount0);
-        require(amountA >= amountAMin, 'AegisV2Router: INSUFFICIENT_A_AMOUNT');
-        require(amountB >= amountBMin, 'AegisV2Router: INSUFFICIENT_B_AMOUNT');
+        require(amountA >= amountAMin, 'AurorV2Router: INSUFFICIENT_A_AMOUNT');
+        require(amountB >= amountBMin, 'AurorV2Router: INSUFFICIENT_B_AMOUNT');
     }
     function removeLiquidityETH(
         address token,
@@ -144,9 +144,9 @@ contract AegisV2Router01 is IAegisV2Router01 {
         uint deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
     ) external override returns (uint amountA, uint amountB) {
-        address pair = AegisV2Library.pairFor(factory, tokenA, tokenB);
+        address pair = AurorV2Library.pairFor(factory, tokenA, tokenB);
         uint value = approveMax ? uint(-1) : liquidity;
-        IAegisV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
+        IAurorV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         (amountA, amountB) = removeLiquidity(tokenA, tokenB, liquidity, amountAMin, amountBMin, to, deadline);
     }
     function removeLiquidityETHWithPermit(
@@ -158,9 +158,9 @@ contract AegisV2Router01 is IAegisV2Router01 {
         uint deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
     ) external override returns (uint amountToken, uint amountETH) {
-        address pair = AegisV2Library.pairFor(factory, token, WETH);
+        address pair = AurorV2Library.pairFor(factory, token, WETH);
         uint value = approveMax ? uint(-1) : liquidity;
-        IAegisV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
+        IAurorV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         (amountToken, amountETH) = removeLiquidityETH(token, liquidity, amountTokenMin, amountETHMin, to, deadline);
     }
 
@@ -169,11 +169,11 @@ contract AegisV2Router01 is IAegisV2Router01 {
     function _swap(uint[] memory amounts, address[] memory path, address _to) private {
         for (uint i; i < path.length - 1; i++) {
             (address input, address output) = (path[i], path[i + 1]);
-            (address token0,) = AegisV2Library.sortTokens(input, output);
+            (address token0,) = AurorV2Library.sortTokens(input, output);
             uint amountOut = amounts[i + 1];
             (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOut) : (amountOut, uint(0));
-            address to = i < path.length - 2 ? AegisV2Library.pairFor(factory, output, path[i + 2]) : _to;
-            IAegisV2Pair(AegisV2Library.pairFor(factory, input, output)).swap(amount0Out, amount1Out, to, new bytes(0));
+            address to = i < path.length - 2 ? AurorV2Library.pairFor(factory, output, path[i + 2]) : _to;
+            IAurorV2Pair(AurorV2Library.pairFor(factory, input, output)).swap(amount0Out, amount1Out, to, new bytes(0));
         }
     }
     function swapExactTokensForTokens(
@@ -183,9 +183,9 @@ contract AegisV2Router01 is IAegisV2Router01 {
         address to,
         uint deadline
     ) external override ensure(deadline) returns (uint[] memory amounts) {
-        amounts = AegisV2Library.getAmountsOut(factory, amountIn, path);
-        require(amounts[amounts.length - 1] >= amountOutMin, 'AegisV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
-        TransferHelper.safeTransferFrom(path[0], msg.sender, AegisV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
+        amounts = AurorV2Library.getAmountsOut(factory, amountIn, path);
+        require(amounts[amounts.length - 1] >= amountOutMin, 'AurorV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
+        TransferHelper.safeTransferFrom(path[0], msg.sender, AurorV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, to);
     }
     function swapTokensForExactTokens(
@@ -195,9 +195,9 @@ contract AegisV2Router01 is IAegisV2Router01 {
         address to,
         uint deadline
     ) external override ensure(deadline) returns (uint[] memory amounts) {
-        amounts = AegisV2Library.getAmountsIn(factory, amountOut, path);
-        require(amounts[0] <= amountInMax, 'AegisV2Router: EXCESSIVE_INPUT_AMOUNT');
-        TransferHelper.safeTransferFrom(path[0], msg.sender, AegisV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
+        amounts = AurorV2Library.getAmountsIn(factory, amountOut, path);
+        require(amounts[0] <= amountInMax, 'AurorV2Router: EXCESSIVE_INPUT_AMOUNT');
+        TransferHelper.safeTransferFrom(path[0], msg.sender, AurorV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, to);
     }
     function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
@@ -207,11 +207,11 @@ contract AegisV2Router01 is IAegisV2Router01 {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(path[0] == WETH, 'AegisV2Router: INVALID_PATH');
-        amounts = AegisV2Library.getAmountsOut(factory, msg.value, path);
-        require(amounts[amounts.length - 1] >= amountOutMin, 'AegisV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
+        require(path[0] == WETH, 'AurorV2Router: INVALID_PATH');
+        amounts = AurorV2Library.getAmountsOut(factory, msg.value, path);
+        require(amounts[amounts.length - 1] >= amountOutMin, 'AurorV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
         IWETH(WETH).deposit{value: amounts[0]}();
-        assert(IWETH(WETH).transfer(AegisV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
+        assert(IWETH(WETH).transfer(AurorV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
         _swap(amounts, path, to);
     }
     function swapTokensForExactETH(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
@@ -220,10 +220,10 @@ contract AegisV2Router01 is IAegisV2Router01 {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(path[path.length - 1] == WETH, 'AegisV2Router: INVALID_PATH');
-        amounts = AegisV2Library.getAmountsIn(factory, amountOut, path);
-        require(amounts[0] <= amountInMax, 'AegisV2Router: EXCESSIVE_INPUT_AMOUNT');
-        TransferHelper.safeTransferFrom(path[0], msg.sender, AegisV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
+        require(path[path.length - 1] == WETH, 'AurorV2Router: INVALID_PATH');
+        amounts = AurorV2Library.getAmountsIn(factory, amountOut, path);
+        require(amounts[0] <= amountInMax, 'AurorV2Router: EXCESSIVE_INPUT_AMOUNT');
+        TransferHelper.safeTransferFrom(path[0], msg.sender, AurorV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, address(this));
         IWETH(WETH).withdraw(amounts[amounts.length - 1]);
         TransferHelper.safeTransferETH(to, amounts[amounts.length - 1]);
@@ -234,10 +234,10 @@ contract AegisV2Router01 is IAegisV2Router01 {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(path[path.length - 1] == WETH, 'AegisV2Router: INVALID_PATH');
-        amounts = AegisV2Library.getAmountsOut(factory, amountIn, path);
-        require(amounts[amounts.length - 1] >= amountOutMin, 'AegisV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
-        TransferHelper.safeTransferFrom(path[0], msg.sender, AegisV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
+        require(path[path.length - 1] == WETH, 'AurorV2Router: INVALID_PATH');
+        amounts = AurorV2Library.getAmountsOut(factory, amountIn, path);
+        require(amounts[amounts.length - 1] >= amountOutMin, 'AurorV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
+        TransferHelper.safeTransferFrom(path[0], msg.sender, AurorV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, address(this));
         IWETH(WETH).withdraw(amounts[amounts.length - 1]);
         TransferHelper.safeTransferETH(to, amounts[amounts.length - 1]);
@@ -249,32 +249,32 @@ contract AegisV2Router01 is IAegisV2Router01 {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(path[0] == WETH, 'AegisV2Router: INVALID_PATH');
-        amounts = AegisV2Library.getAmountsIn(factory, amountOut, path);
-        require(amounts[0] <= msg.value, 'AegisV2Router: EXCESSIVE_INPUT_AMOUNT');
+        require(path[0] == WETH, 'AurorV2Router: INVALID_PATH');
+        amounts = AurorV2Library.getAmountsIn(factory, amountOut, path);
+        require(amounts[0] <= msg.value, 'AurorV2Router: EXCESSIVE_INPUT_AMOUNT');
         IWETH(WETH).deposit{value: amounts[0]}();
-        assert(IWETH(WETH).transfer(AegisV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
+        assert(IWETH(WETH).transfer(AurorV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
         _swap(amounts, path, to);
         if (msg.value > amounts[0]) TransferHelper.safeTransferETH(msg.sender, msg.value - amounts[0]); // refund dust eth, if any
     }
 
     function quote(uint amountA, uint reserveA, uint reserveB) public pure override returns (uint amountB) {
-        return AegisV2Library.quote(amountA, reserveA, reserveB);
+        return AurorV2Library.quote(amountA, reserveA, reserveB);
     }
 
     function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) public pure override returns (uint amountOut) {
-        return AegisV2Library.getAmountOut(amountIn, reserveIn, reserveOut);
+        return AurorV2Library.getAmountOut(amountIn, reserveIn, reserveOut);
     }
 
     function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut) public pure override returns (uint amountIn) {
-        return AegisV2Library.getAmountOut(amountOut, reserveIn, reserveOut);
+        return AurorV2Library.getAmountOut(amountOut, reserveIn, reserveOut);
     }
 
     function getAmountsOut(uint amountIn, address[] memory path) public view override returns (uint[] memory amounts) {
-        return AegisV2Library.getAmountsOut(factory, amountIn, path);
+        return AurorV2Library.getAmountsOut(factory, amountIn, path);
     }
 
     function getAmountsIn(uint amountOut, address[] memory path) public view override returns (uint[] memory amounts) {
-        return AegisV2Library.getAmountsIn(factory, amountOut, path);
+        return AurorV2Library.getAmountsIn(factory, amountOut, path);
     }
 }

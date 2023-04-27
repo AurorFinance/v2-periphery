@@ -1,22 +1,22 @@
 pragma solidity =0.6.6;
 
-import '../v2-core/contracts/interfaces/IAegisV2Pair.sol';
+import '../v2-core/contracts/interfaces/IAurorV2Pair.sol';
 import '@uniswap/lib/contracts/libraries/Babylonian.sol';
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 
-import '../libraries/AegisV2LiquidityMathLibrary.sol';
+import '../libraries/AurorV2LiquidityMathLibrary.sol';
 import '../interfaces/IERC20.sol';
-import '../interfaces/IAegisV2Router01.sol';
+import '../interfaces/IAurorV2Router01.sol';
 import '../libraries/SafeMath.sol';
-import '../libraries/AegisV2Library.sol';
+import '../libraries/AurorV2Library.sol';
 
 contract ExampleSwapToPrice {
     using SafeMath for uint256;
 
-    IAegisV2Router01 public immutable router;
+    IAurorV2Router01 public immutable router;
     address public immutable factory;
 
-    constructor(address factory_, IAegisV2Router01 router_) public {
+    constructor(address factory_, IAurorV2Router01 router_) public {
         factory = factory_;
         router = router_;
     }
@@ -42,8 +42,8 @@ contract ExampleSwapToPrice {
         bool aToB;
         uint256 amountIn;
         {
-            (uint256 reserveA, uint256 reserveB) = AegisV2Library.getReserves(factory, tokenA, tokenB);
-            (aToB, amountIn) = AegisV2LiquidityMathLibrary.computeProfitMaximizingTrade(
+            (uint256 reserveA, uint256 reserveB) = AurorV2Library.getReserves(factory, tokenA, tokenB);
+            (aToB, amountIn) = AurorV2LiquidityMathLibrary.computeProfitMaximizingTrade(
                 truePriceTokenA, truePriceTokenB,
                 reserveA, reserveB
             );

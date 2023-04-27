@@ -1,6 +1,6 @@
 pragma solidity =0.6.6;
 
-import '../libraries/AegisV2LiquidityMathLibrary.sol';
+import '../libraries/AurorV2LiquidityMathLibrary.sol';
 
 contract ExampleComputeLiquidityValue {
     using SafeMath for uint256;
@@ -11,14 +11,14 @@ contract ExampleComputeLiquidityValue {
         factory = factory_;
     }
 
-    // see AegisV2LiquidityMathLibrary#getReservesAfterArbitrage
+    // see AurorV2LiquidityMathLibrary#getReservesAfterArbitrage
     function getReservesAfterArbitrage(
         address tokenA,
         address tokenB,
         uint256 truePriceTokenA,
         uint256 truePriceTokenB
     ) external view returns (uint256 reserveA, uint256 reserveB) {
-        return AegisV2LiquidityMathLibrary.getReservesAfterArbitrage(
+        return AurorV2LiquidityMathLibrary.getReservesAfterArbitrage(
             factory,
             tokenA,
             tokenB,
@@ -27,7 +27,7 @@ contract ExampleComputeLiquidityValue {
         );
     }
 
-    // see AegisV2LiquidityMathLibrary#getLiquidityValue
+    // see AurorV2LiquidityMathLibrary#getLiquidityValue
     function getLiquidityValue(
         address tokenA,
         address tokenB,
@@ -36,7 +36,7 @@ contract ExampleComputeLiquidityValue {
         uint256 tokenAAmount,
         uint256 tokenBAmount
     ) {
-        return AegisV2LiquidityMathLibrary.getLiquidityValue(
+        return AurorV2LiquidityMathLibrary.getLiquidityValue(
             factory,
             tokenA,
             tokenB,
@@ -44,7 +44,7 @@ contract ExampleComputeLiquidityValue {
         );
     }
 
-    // see AegisV2LiquidityMathLibrary#getLiquidityValueAfterArbitrageToPrice
+    // see AurorV2LiquidityMathLibrary#getLiquidityValueAfterArbitrageToPrice
     function getLiquidityValueAfterArbitrageToPrice(
         address tokenA,
         address tokenB,
@@ -55,7 +55,7 @@ contract ExampleComputeLiquidityValue {
         uint256 tokenAAmount,
         uint256 tokenBAmount
     ) {
-        return AegisV2LiquidityMathLibrary.getLiquidityValueAfterArbitrageToPrice(
+        return AurorV2LiquidityMathLibrary.getLiquidityValueAfterArbitrageToPrice(
             factory,
             tokenA,
             tokenB,
@@ -76,7 +76,7 @@ contract ExampleComputeLiquidityValue {
         uint256
     ) {
         uint gasBefore = gasleft();
-        AegisV2LiquidityMathLibrary.getLiquidityValueAfterArbitrageToPrice(
+        AurorV2LiquidityMathLibrary.getLiquidityValueAfterArbitrageToPrice(
             factory,
             tokenA,
             tokenB,

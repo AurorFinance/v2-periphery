@@ -1,15 +1,11 @@
 {
-  "name": "@0xoblabs/v2-periphery",
+  "name": "@AurorFinance/v2-periphery",
   "version": "1.0",
-  "description": "🎚 Peripheral smart contracts for interacting with Aegis V2",
+  "description": "🎚 Peripheral smart contracts for interacting with Auror V2",
   "engines": {
     "node": ">=10"
   },
-  "homepage": "https://aegisdoe.finance",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/0xobLabs/v2-periphery"
-  },
+  "homepage": "https://auror.finance",
   "files": [
     "build",
     "contracts"

@@ -4,7 +4,7 @@ import './libraries/SafeMath.sol';
 import './openzeppelin/Ownable.sol';
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 
-contract AegisRouterFee is Ownable {
+contract AurorRouterFee is Ownable {
     using SafeMath for uint256;
 
     address public treasury;
@@ -12,12 +12,12 @@ contract AegisRouterFee is Ownable {
 	uint constant MAX_FEE_AMOUNT = 1000;
 
     constructor(address _treasury) public {
-		require(_treasury != address(0), "Aegis Router Fee: INVALID");
+		require(_treasury != address(0), "Auror Router Fee: INVALID");
         treasury = _treasury;
     }
 
     function setTreasury(address _treasury) external onlyOwner {
-		require(_treasury != address(0), "Aegis Router Fee: INVALID");
+		require(_treasury != address(0), "Auror Router Fee: INVALID");
 		if (_treasury != treasury) {
         	treasury = _treasury;
 		}

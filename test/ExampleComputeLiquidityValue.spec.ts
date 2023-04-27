@@ -91,11 +91,11 @@ describe('ExampleComputeLiquidityValue', () => {
         token1.address,
         expandTo18Decimals(7)
       )
-      expect(token0Amount).to.eq('1397900000000000000') //amount * (997/1000) -> calculate aegis fees
+      expect(token0Amount).to.eq('1397900000000000000') //amount * (997/1000) -> calculate auror fees
       expect(token1Amount).to.eq('35052578868302453680')
     })
 
-    // TEST DISABLED: using Aegis fee policy
+    // TEST DISABLED: using Auror fee policy
     //describe('fee on', () => {
     //  beforeEach('turn on fee', async () => {
     //    await factory.setFeeTo(wallet.address)
@@ -323,7 +323,7 @@ describe('ExampleComputeLiquidityValue', () => {
       })
     })
 
-    // TEST DISABLED as using Aegis fee policy
+    // TEST DISABLED as using Auror fee policy
     //describe('fee is on', () => {
     //  beforeEach('turn on fee', async () => {
     //    await factory.setFeeTo(wallet.address)

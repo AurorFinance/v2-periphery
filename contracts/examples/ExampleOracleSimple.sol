@@ -1,11 +1,11 @@
 pragma solidity =0.6.6;
 
-import '../v2-core/contracts/interfaces/IAegisV2Factory.sol';
-import '../v2-core/contracts/interfaces/IAegisV2Pair.sol';
+import '../v2-core/contracts/interfaces/IAurorV2Factory.sol';
+import '../v2-core/contracts/interfaces/IAurorV2Pair.sol';
 import '@uniswap/lib/contracts/libraries/FixedPoint.sol';
 
-import '../libraries/AegisV2OracleLibrary.sol';
-import '../libraries/AegisV2Library.sol';
+import '../libraries/AurorV2OracleLibrary.sol';
+import '../libraries/AurorV2Library.sol';
 
 // fixed window oracle that recomputes the average price for the entire period once every period
 // note that the price average is only guaranteed to be over at least 1 period, but may be over a longer period
@@ -14,7 +14,7 @@ contract ExampleOracleSimple {
 
     uint public constant PERIOD = 24 hours;
 
-    IAegisV2Pair immutable pair;
+    IAurorV2Pair immutable pair;
     address public immutable token0;
     address public immutable token1;
 
@@ -25,7 +25,7 @@ contract ExampleOracleSimple {
     FixedPoint.uq112x112 public price1Average;
 
     constructor(address factory, address tokenA, address tokenB) public {
-        IAegisV2Pair _pair = IAegisV2Pair(AegisV2Library.pairFor(factory, tokenA, tokenB));
+        IAurorV2Pair _pair = IAurorV2Pair(AurorV2Library.pairFor(factory, tokenA, tokenB));
         pair = _pair;
         token0 = _pair.token0();
         token1 = _pair.token1();
@@ -39,7 +39,7 @@ contract ExampleOracleSimple {
 
     function update() external {
         (uint price0Cumulative, uint price1Cumulative, uint32 blockTimestamp) =
-            AegisV2OracleLibrary.currentCumulativePrices(address(pair));
+            AurorV2OracleLibrary.currentCumulativePrices(address(pair));
         uint32 timeElapsed = blockTimestamp - blockTimestampLast; // overflow is desired
 
         // ensure that at least one full period has passed since the last update

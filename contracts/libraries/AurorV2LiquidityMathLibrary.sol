@@ -1,16 +1,16 @@
 pragma solidity >=0.5.0;
 
-import '../v2-core/contracts/interfaces/IAegisV2Pair.sol';
-import '../v2-core/contracts/interfaces/IAegisV2Factory.sol';
+import '../v2-core/contracts/interfaces/IAurorV2Pair.sol';
+import '../v2-core/contracts/interfaces/IAurorV2Factory.sol';
 import '@uniswap/lib/contracts/libraries/Babylonian.sol';
 import '@uniswap/lib/contracts/libraries/FullMath.sol';
 
 import './SafeMath.sol';
-import './AegisV2Library.sol';
+import './AurorV2Library.sol';
 
 // library containing some math for dealing with the liquidity shares of a pair, e.g. computing their exact value
 // in terms of the underlying tokens
-library AegisV2LiquidityMathLibrary {
+library AurorV2LiquidityMathLibrary {
     using SafeMath for uint256;
 
     // computes the direction and magnitude of the profit-maximizing trade
@@ -48,9 +48,9 @@ library AegisV2LiquidityMathLibrary {
         uint256 truePriceTokenB
     ) view internal returns (uint256 reserveA, uint256 reserveB) {
         // first get reserves before the swap
-        (reserveA, reserveB) = AegisV2Library.getReserves(factory, tokenA, tokenB);
+        (reserveA, reserveB) = AurorV2Library.getReserves(factory, tokenA, tokenB);
 
-        require(reserveA > 0 && reserveB > 0, 'AegisV2ArbitrageLibrary: ZERO_PAIR_RESERVES');
+        require(reserveA > 0 && reserveB > 0, 'AurorV2ArbitrageLibrary: ZERO_PAIR_RESERVES');
 
         // then compute how much to swap to arb to the true price
         (bool aToB, uint256 amountIn) = computeProfitMaximizingTrade(truePriceTokenA, truePriceTokenB, reserveA, reserveB);
@@ -61,11 +61,11 @@ library AegisV2LiquidityMathLibrary {
 
         // now affect the trade to the reserves
         if (aToB) {
-            uint amountOut = AegisV2Library.getAmountOut(amountIn, reserveA, reserveB);
+            uint amountOut = AurorV2Library.getAmountOut(amountIn, reserveA, reserveB);
             reserveA += amountIn;
             reserveB -= amountOut;
         } else {
-            uint amountOut = AegisV2Library.getAmountOut(amountIn, reserveB, reserveA);
+            uint amountOut = AurorV2Library.getAmountOut(amountIn, reserveB, reserveA);
             reserveB += amountIn;
             reserveA -= amountOut;
         }
@@ -103,9 +103,9 @@ library AegisV2LiquidityMathLibrary {
         address tokenB,
         uint256 liquidityAmount
     ) internal view returns (uint256 tokenAAmount, uint256 tokenBAmount) {
-        (uint256 reservesA, uint256 reservesB) = AegisV2Library.getReserves(factory, tokenA, tokenB);
-        IAegisV2Pair pair = IAegisV2Pair(AegisV2Library.pairFor(factory, tokenA, tokenB));
-        bool feeOn = IAegisV2Factory(factory).feeTo() != address(0);
+        (uint256 reservesA, uint256 reservesB) = AurorV2Library.getReserves(factory, tokenA, tokenB);
+        IAurorV2Pair pair = IAurorV2Pair(AurorV2Library.pairFor(factory, tokenA, tokenB));
+        bool feeOn = IAurorV2Factory(factory).feeTo() != address(0);
         uint kLast = feeOn ? pair.kLast() : 0;
         uint totalSupply = pair.totalSupply();
         return computeLiquidityValue(reservesA, reservesB, totalSupply, liquidityAmount, feeOn, kLast);
@@ -124,8 +124,8 @@ library AegisV2LiquidityMathLibrary {
         uint256 tokenAAmount,
         uint256 tokenBAmount
     ) {
-        bool feeOn = IAegisV2Factory(factory).feeTo() != address(0);
-        IAegisV2Pair pair = IAegisV2Pair(AegisV2Library.pairFor(factory, tokenA, tokenB));
+        bool feeOn = IAurorV2Factory(factory).feeTo() != address(0);
+        IAurorV2Pair pair = IAurorV2Pair(AurorV2Library.pairFor(factory, tokenA, tokenB));
         uint kLast = feeOn ? pair.kLast() : 0;
         uint totalSupply = pair.totalSupply();
 
