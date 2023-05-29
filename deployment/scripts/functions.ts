@@ -3,12 +3,11 @@ import * as dotenv from 'dotenv';
 
 dotenv.config({path: process.cwd() + '/scripts/process.env'});
 
-//const adminAddresses = {
-//  feeToSetter: process.env.AUROR_MANAGER_ADDRESS!,
-//	feeTo: process.env.AUROR_TREASURY_ADDRESS!,
-//}
-
-const GAS_LIMIT = 6000000;
+export type FixedWindowTwapProps = {
+	factory: string;
+	tokenA: string;
+	tokenB: string;
+}
 
 export async function deployRouter(factory:string, weth: string) : Promise<string> {
 	if (!factory || !weth) {
@@ -41,6 +40,22 @@ export async function deployWeth() : Promise<string> {
 	console.log('😎 Contract deployed at:', deployedContract.address);
 
   console.log("✅ Deployment WETH passed");
+
+	return deployedContract.address;
+}
+
+export async function deployFixedWindowTwap(props: FixedWindowTwapProps) : Promise<string> {
+	const [deployer] = await ethers.getSigners();
+	console.log('ℹ️  Deploying contract with address:', deployer.address);
+
+	const ContractSource = await ethers.getContractFactory('FixedWindowTwap');
+	const deployedContract = await ContractSource.deploy(props.factory, props.tokenA, props.tokenB);
+
+	await deployedContract.deployed();
+
+	console.log('😎 Contract deployed at:', deployedContract.address);
+
+  console.log("✅ Deployment FixedWindowTwap passed");
 
 	return deployedContract.address;
 }
