@@ -1,5 +1,6 @@
 import { ethers } from 'hardhat';
 import * as dotenv from 'dotenv';
+import fixedWindowTwapAbi from "../artifacts//contracts/oracles/FixedWindowTwap.sol/FixedWindowTwap.json";
 
 dotenv.config({path: process.cwd() + '/scripts/process.env'});
 
@@ -7,6 +8,12 @@ export type FixedWindowTwapProps = {
 	factory: string;
 	tokenA: string;
 	tokenB: string;
+}
+
+export type ConsultFixedWindowTwapProps = {
+  contractAddress: string;
+	token: string;
+	amountInEth: string;
 }
 
 export async function deployRouter(factory:string, weth: string) : Promise<string> {
@@ -58,4 +65,12 @@ export async function deployFixedWindowTwap(props: FixedWindowTwapProps) : Promi
   console.log("✅ Deployment FixedWindowTwap passed");
 
 	return deployedContract.address;
+}
+
+export async function consultFixedWindowTwap(props: ConsultFixedWindowTwapProps) : Promise<void> {
+	const [deployer] = await ethers.getSigners();
+
+  const contract = new ethers.Contract(props.contractAddress, fixedWindowTwapAbi.abi, deployer);
+  console.log(ethers.utils.formatEther(
+    await contract.consult(props.token, ethers.utils.parseEther(props.amountInEth))));
 }
